@@ -7,7 +7,7 @@ Contents:
 - [Overview of the Federation](#overview-of-the-federation)
 - [MIP Federated requirements](#mip-federated-requirements)
 - [MIP Federated deployment](#mip-federated-deployment)
-- [Behaviour in case of failure](#behaviour_in_case_of_failure)
+- [Behaviour in case of failure](#behaviour-in-case-of-failure)
 - [Security](#security)
 
 ## Overview of the Federation

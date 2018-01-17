@@ -4,9 +4,9 @@ This repository contains all documentation regarding the MIP Federation, and scr
 
 ## Overview
 
-The MIP Federation allows to connect multiple MIP Local instances securely over the web, so that privacy-preserving analysis and queries on all the Federation nodes' data can be performed in a distributed manner from the Federation manager, using the Exareme software.
+The MIP Federation allows to connect multiple MIP Local instances securely over the web, so that privacy-preserving analysis and queries from the Federation manager. The queries will be performed in a distributed manner over the data stored at the Federation nodes using the Exareme software.
 
-Complete documentation of the Federation can be found in <a href="">MIP Federation specifications</a>.
+Complete documentation of the Federation can be found in [MIP Federation specifications](https://github.com/HBPMedical/mip-federation/blob/master/Documentation/MIP_Federation_specifications.md).
 
 The steps to deploy the Federation are the following: 
 
@@ -23,7 +23,7 @@ In the following we are going to use only one master node. More can be added for
 
 MIP Local should be installed on the nodes that will join the MIP Federation. To join a node without MIP Local, see section [Adding a node without MIP Local](#adding-a-node-without-mip-local).
 
-The Federation manager server must have a fixed IP address; other nodes must have a public IP, ideally also fixed. The firewall must allow connections on several ports: see details in <a href="">Firewall configuration</a>.
+The Federation manager server must have a fixed IP address; other nodes must have a public IP, ideally also fixed. The firewall must allow connections on several ports: see details in [Firewall configuration](https://github.com/HBPMedical/mip-federation/blob/master/Documentation/Firewall_configuration.md).
 
 ### Deploy the Federation
 

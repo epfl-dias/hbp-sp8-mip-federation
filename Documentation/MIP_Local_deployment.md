@@ -9,15 +9,15 @@ See also the official documentation of the deployment scripts project on Github:
 ## Contents
 
 - [Introduction](#introduction)
-- [User management](#user_management)
-- [Known limitations](#known_limitations)
-- [Deployment steps](#deployment_steps)
-- [Deployment validation](#deployment_validation)
-- [Direct access to the deployed databases](#direct_access_to_the_deployed_databases)
+- [User management](#user-management)
+- [Known limitations](#known-limitations)
+- [Deployment steps](#deployment-steps)
+- [Deployment validation](#deployment-validation)
+- [Direct access to the deployed databases](#direct-access-to-the-deployed-databases)
 - [Reboot](#reboot)
 - [Upgrades](#upgrades)
-- [Adding clinical data](#adding_clinical_data)
-- [Cleanup MIP installation](#cleanup_mip_installation)
+- [Adding clinical data](#adding-clinical-data)
+- [Cleanup MIP installation](#cleanup-mip-installation)
 - [Requirements](#requirements)
 - [Network configuration](#network-configuration)
 
@@ -113,6 +113,7 @@ The Web Portal of MIP Local can be deployed in two settings:
 - User authentification required: every user must obtain credentials to access the Web Portal. In this case, user rights and authentification are managed by the main HBP servers, so network access to these servers must be allowed.
 
 Further information:
+
 [//]: # ( from Jacek Manthey to Lille)
 
 [... Users] can create accounts on the HBP Portal (see https://mip.humanbrainproject.eu/intro) through invitation, which means that the access control is not stringent.
@@ -416,7 +417,7 @@ Draft guidelines to add clinical data:
 > 	- Once the MIP-Local configuration for the deployment exist, modify (line 20 of) the file
 > 	   envs/mip-local/etc/ansible/group_vars/reference to reference the right docker image
 > 	- Run setup.sh so that the new docker image is run and copies the data in the meta-db database
-> 	- Restart all services of the following building blocks from Marathon (scale them down to 0, then up again to 1)
+> 	- Restart all services of the following building blocks from Marathon (if necessary, scale them down to 0, then up again to 1)
 > 		- web portal
 > 		- woken
 > 		- data factory
