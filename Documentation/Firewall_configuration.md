@@ -148,11 +148,11 @@ Specific public services provided by the MIP to the end-users will require their
     * For worker nodes:
 
     ```sh
-    $ sudo firewall-cmd --permanent --zone=public --add-service=docker-swarm-worker
+    $ sudo firewall-cmd --info-service=docker-swarm-worker
     ```
 
     * For Manager nodes 
    
     ```sh
-    $ sudo firewall-cmd --permanent --zone=public --add-service=docker-swarm-manager
+    $ sudo firewall-cmd --info-service=docker-swarm-manager
     ```
