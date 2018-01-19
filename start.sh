@@ -17,8 +17,6 @@
 # DISCLAIM ANY LIABILITY OF ANY KIND FOR ANY DAMAGES WHATSOEVER RESULTING FROM THE
 # USE OF THIS SOFTWARE.
 
-. ./settings.sh
-
 federation_nodes=""
 federation_hosts=""
 for h in $(docker node ls --format '{{ .Hostname }}')
@@ -28,6 +26,10 @@ do
 done
 
 usage() {
+	( # This is just in case the user wants to check the settings
+		. ./settings.sh
+	)
+
 	cat <<EOT
 usage: $0 [-h|--help] (all|nodename [nodename ...])
 	-h, --help: show this message and exit
@@ -53,6 +55,8 @@ start_node() {
 		FEDERATION_NODE=$1
 		LDSM_HOST=$2
 		EXAREME_ROLE=$3
+
+		. ./settings.sh ${FEDERATION_NODE}
 
 		# Export the settings to the docker-compose files
 		export FEDERATION_NODE
@@ -104,17 +108,28 @@ start_nodes() {
 	for h in ${managers}
 	do
 		label=$(docker node inspect --format '{{ .Spec.Labels.name }}' ${h})
-		dbhost=$(docker node inspect --format '{{ .Status.Addr }}' ${h})
-		EXAREME_WORKERS_WAIT=$(echo "$workers" | wc -w)
-		start_node ${label} ${dbhost} manager
+		(
+			# Retrieve LDSM_HOST if it has been set manually.
+			SHOW_SETTINGS=false . ./settings.sh ${label}
+			test -z "${LDSM_HOST}" && \
+				LDSM_HOST=$(docker node inspect --format '{{ .Status.Addr }}' ${h})
+			EXAREME_WORKERS_WAIT=$(echo "$workers" | wc -w)
+			start_node ${label} ${LDSM_HOST} manager
+		)
 	done
 
 	# Then start all the worker nodes
 	for h in ${workers}
 	do
 		label=$(docker node inspect --format '{{ .Spec.Labels.name }}' ${h})
-		dbhost=$(docker node inspect --format '{{ .Status.Addr }}' ${h})
-		start_node ${label} ${dbhost} worker
+		(
+			# Retrieve LDSM_HOST if it has been set manually.
+			SHOW_SETTINGS=false . ./settings.sh ${label}
+			test -z "${LDSM_HOST}" && \
+				LDSM_HOST=$(docker node inspect --format '{{ .Status.Addr }}' ${h})
+
+			start_node ${label} ${LDSM_HOST} worker
+		)
 	done
 }
 
@@ -128,6 +143,8 @@ start_one_node() {
 		label=$(docker node inspect --format '{{ .Spec.Labels.name }}' ${h})
 		if [ "x${label}" == "x${FEDERATION_NODE}" ];
 		then
+			# Retrieve LDSM_HOST, EXAREME_ROLE if they have been set manually.
+			SHOW_SETTINGS=false . ./settings.sh ${label}
 			test -z "${LDSM_HOST}" && \
 				LDSM_HOST=$(docker node inspect --format '{{ .Status.Addr }}' ${h})
 

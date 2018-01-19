@@ -17,8 +17,6 @@
 # DISCLAIM ANY LIABILITY OF ANY KIND FOR ANY DAMAGES WHATSOEVER RESULTING FROM THE
 # USE OF THIS SOFTWARE.
 
-. ./settings.sh
-
 federation_nodes=""
 federation_hosts=""
 for h in $(docker node ls --format '{{ .Hostname }}')
@@ -28,6 +26,10 @@ do
 done
 
 usage() {
+	( # This is just in case the user wants to check the settings
+		. ./settings.sh
+	)
+
 	cat <<EOT
 usage: $0 [-h|--help] (all|nodename [nodename ...])
 	-h, --help: show this message and exit
