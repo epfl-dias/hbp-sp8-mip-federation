@@ -61,7 +61,7 @@ start_node() {
 		# Export the settings to the docker-compose files
 		export FEDERATION_NODE
 
-		export LDSM_USERNAME LDSM_PASSWORD LDSM_HOST LDSM_PORT
+		export LDSM_USERNAME LDSM_PASSWORD LDSM_HOST LDSM_PORT LDSM_DB
 
 		export CONSUL_IMAGE CONSUL_VERSION
 		export EXAREME_IMAGE EXAREME_VERSION
