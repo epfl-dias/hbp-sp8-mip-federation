@@ -61,8 +61,8 @@ This file lists the building blocks that will be installed. In theory, it can be
 - Ubuntu 16.04 system (partial support for RHEL).
 - Matlab R2016b. (Required for the Data Factory. Alternatively the MIP can be installed without the Data Factory: see below the corresponding deployment option.)
 - According to the official documentation, python version 2.7 and the library jmespath need to be installed beforehand. 
-   - For ubuntu: 
-   	
+   - For ubuntu:
+
    		```
    		sudo apt install python2.7 
    		ln -s /usr/bin/python2.7 /usr/bin/python
@@ -126,7 +126,7 @@ In order to activate the user access using the authentication through the HBP Po
 The following are known limitations of the deployment scripts, version 2.5.3.
 
 - It is currently not possible to deploy MIP Local with a firewall enabled. MIP Local cannot run either with the firewall up, unless the correct rules are configured (see [MIP Local requirements](#mip-local-requirements)). 
-   		
+
 - The deployed MIP will include research datasets (PPMI, ADNI and EDSD), but the process to include hospital data in MIP-Local is as yet unclear. **TODO: Obtain information, test, complete dedicated section below**
 
 Note: Clinical data processed and made available in the Local Data Store Mirror (LDSM) will not be visible from the Local Web Portal without further configuration, but they will be available to the Federation if the node is connected (variables included in the CDE only).
@@ -142,7 +142,7 @@ This section describes how to deploy MIP Local without clinical data, on a clean
 	- server's address on the local network,
 	- credentials for the gitlab repository, to download the research data sets,
 	- sudo access to the target server.
-    
+
 2. Clone the `mip-microservices-infrastructure` git repo in the desired location (here a `mip-infra` folder):
 
 	```sh
@@ -434,13 +434,13 @@ Please be advised this is drastic steps which will remove entirely several softw
 
  1. Purge installed infrastructure:
 
-   ```sh
+    ```sh
 	$ sudo apt purge -y --allow-change-held-packages docker-ce marathon zookeeper mesos
-	```
-	
+    ```
+
  2. Remove all remaining configuration as it will prevent proper installation:
- 
-   ```sh
+
+    ```sh
 	$ sudo rm -rf /etc/marathon /etc/mip
 	$ sudo reboot
 	$ sudo rm -rf /etc/sysconfig/mesos-agent /etc/sysconfig/mesos-master /var/lib/mesos /var/lib/docker
@@ -448,27 +448,27 @@ Please be advised this is drastic steps which will remove entirely several softw
 	$ sudo find /var /etc /usr -name \*marathon\* -delete
 	$ sudo find /etc /usr /var -name \*mesos\* -delete
 	$ sudo rm -rf /srv/docker/ldsmdb /srv/docker/research-db
-	```
+    ```
 
    ------
    **WARNING:**
    Backup your data before executing the command above. This will remove anything placed inside databases, as well as stored insides docker images.
 
    ------
-	
+
 3. Reload the system initialisation scripts, and reboot:
 
    ```sh
 	$ sudo systemctl daemon-reload
 	$ sudo reboot
    ```
- 
+
 4. Manually pre-install the packages. As this requires to specify precise version numbers, this list will be out of date really soon:
 
    ```sh
    $ sudo apt install -y --allow-downgrades --allow-change-held-packages docker-ce=17.09.0~ce-0~ubuntu
    ```
-   
+
 ## Troubleshooting
 
 [//]: # (from Slack)
