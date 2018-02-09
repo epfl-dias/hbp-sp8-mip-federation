@@ -436,7 +436,7 @@ Please be advised this is drastic steps which will remove entirely several softw
 
    ```sh
 	$ sudo apt purge -y --allow-change-held-packages docker-ce marathon zookeeper mesos
-   ```
+	```
 	
  2. Remove all remaining configuration as it will prevent proper installation:
  
@@ -448,7 +448,7 @@ Please be advised this is drastic steps which will remove entirely several softw
 	$ sudo find /var /etc /usr -name \*marathon\* -delete
 	$ sudo find /etc /usr /var -name \*mesos\* -delete
 	$ sudo rm -rf /srv/docker/ldsmdb /srv/docker/research-db
-   ```
+	```
 
    ------
    **WARNING:**
