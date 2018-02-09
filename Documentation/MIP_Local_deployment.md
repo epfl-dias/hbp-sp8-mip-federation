@@ -1,6 +1,6 @@
 # MIP Local deployment and documentation
 
-This document summarises the knowledge of DIAS-EPFL regarding the deployment and upgrade process of MIP Local. It is based on the version 2.5.3 released on Nov 13, 2017.
+This document summarises the knowledge of DIAS-EPFL regarding the deployment and upgrade process of MIP Local. It is based on the version 2.5.3 released on Dec 14, 2017.
 
 **Disclaimer:** The authors of this document are not in charge of the MIP development and its deployment scripts. They have limited knowledge of most of the elements that are deployed. No guaranties are offered as to the correctness of this document.
 
@@ -9,6 +9,8 @@ See also the official documentation of the deployment scripts project on Github:
 ## Contents
 
 - [Introduction](#introduction)
+- [Requirements](#requirements)
+- [Network configuration](#network-configuration)
 - [User management](#user-management)
 - [Known limitations](#known-limitations)
 - [Deployment steps](#deployment-steps)
@@ -18,8 +20,7 @@ See also the official documentation of the deployment scripts project on Github:
 - [Upgrades](#upgrades)
 - [Adding clinical data](#adding-clinical-data)
 - [Cleanup MIP installation](#cleanup-mip-installation)
-- [Requirements](#requirements)
-- [Network configuration](#network-configuration)
+- [Troubleshooting](#troubleshooting)
 
 ## Introduction
 
@@ -97,11 +98,30 @@ The firewall of the server where MIP is deployed must be set up and deny all inc
 
 Some ports must be open for intra-server connections (accept only requests coming from the local server itself, but on its public address):
 
-- 31543 ("LDSM", PostgresRAW database)
+- 31432 ("LDSM", PostgresRAW database)
+- 31433 (Postgres "analytics-db")
 - 31555 (PostgresRAW-UI)
 
-**TODO: Obtain list and reproduce it here.**
+Untested / unexplained list of supplementary ports to open:
 
+firewall\_open\_tcp\_ports:
+ 
+  - 443 # https (not always required?)
+  - 3389 # xrdp
+  - 4400 # [dev] chronos (not always required?)
+  - 5050 # [dev] mesos (not always required?
+  - 5080 # [dev] marathon (not always required?)
+
+firewall\_open\_udp\_ports:
+
+  - 67 # dhclient
+  - 68 # dhclient
+
+firewall\_whitelisted\_hosts: *(No idea what this is for.)*
+
+  - '155.105.223.24'
+
+**TODO: If possible, get more explicit information. Test configuration of firewall. Determine which ports are only needed locally.**
 
 ## User management
 
@@ -136,7 +156,9 @@ Note: Clinical data processed and made available in the Local Data Store Mirror 
 
 This section describes how to deploy MIP Local without clinical data, on a clean server. If a previous installation was attempted, please see [Cleanup MIP installation](#cleanup-mip-installation). To add hospital data see the section [Adding clinical data](#adding-clinical-data).
 
-1. Retrieve informations requested for the deployment:
+At the time of writing (25.01.2018), the <a href="https://github.com/HBPMedical/mip-microservices-infrastructure/blob/master/docs/installation/mip-local.md">official installation doc</a> contains several errors.
+
+1. Retrieve informations required for the deployment:
 
 	- Matlab installation folder path,
 	- server's address on the local network,
@@ -146,14 +168,16 @@ This section describes how to deploy MIP Local without clinical data, on a clean
 2. Clone the `mip-microservices-infrastructure` git repo in the desired location (here a `mip-infra` folder):
 
 	```sh
-	git clone https://github.com/HBPMedical/mip-microservices-infrastructure.git mip-infra
-	cd mip-infra/
-	./after-git-clone.sh  # Need confirmation whether this is needed or not
-	git checkout tags/2.5.3
-	./after-update.sh  # Need confirmation whether this is needed or not
+	git clone --origin mmsi --branch stable https://github.com/HBPMedical/mip-microservices-infrastructure.git mip-local
 	```
-
-	Also check the process as described in official doc.
+	This will clone the branch "stable"; replace "stable" by a tag or another branch as needed.
+	This command will also name the remote repository mmsi.
+	
+	```
+	./after-git-clone.sh  # Need confirmation whether this is needed or not
+	./after-update.sh  # Need confirmation whether this is needed or not
+	git checkout tags/2.5.3
+	```
 
 3. Run the configuration script:
 
@@ -186,7 +210,7 @@ This section describes how to deploy MIP Local without clinical data, on a clean
 	2) Relational database
 	> 
 	```
-	WARNING: Both options load the research data (ADNI, PPMI and EDSD) in a relational database. The first option will upload the data in the LDSM database using PostgresRAW, and the second in an unofficial postgres database named "research-db".
+	**NOTE:** Both options load the research data (ADNI, PPMI and EDSD) in a relational database. The first option will upload the data in the LDSM database using PostgresRAW, and the second in an unofficial postgres database named "research-db".
 	
 	```
 	Please enter an id for the main dataset to process, e.g. 'demo' and a 
@@ -344,6 +368,52 @@ This section describes how to deploy MIP Local without clinical data, on a clean
 	localhost                  : ok=??   changed=??   unreachable=0    failed=0   
 	```
 
+## Uploading the configuration on bitbucket
+
+For production maintenance, the dedicated MIP team request that the configuration be uploaded on bitbucket. The configuration script should enable the encryption of sensitive information before the upload is done. 
+
+The secure key generated during the configuration phase (which requests the passphrase to be used), seems to be stored under `mip-local/.git-crypt/keys/default/0/`. It should be automatically found for the next steps, but make sure it is not encrypted if you want to encrypt the full configuration folder.
+
+The most important file to encrypt is `mip-local/envs/mip-local/etc/ansible/host_vars/localhost`. You can make sure it will be encrypted by running the following command:
+
+```
+git-crypt status | grep -v ^not
+    encrypted: envs/mip-local/etc/ansible/host_vars/localhost
+```
+
+To give access to the encrypted configuration to the maintenance team, the public gpg key of a member of the team must be obtained and copied to the server. The member can then be authorised following these steps:
+
+```
+gpg --import <path>/<key-name.key>
+gpg --sign-key the-public-key-id # This id is given by the previous command under "gpg: key xxxxxxxx"
+git-crypt add-gpg-user the-public-key-id
+```
+
+The existing keys can be listed with:
+
+```
+gpg --list-secret-keys
+```
+	
+Create a local branch "master" or another name, depending on which branch you want to push the configuration.
+	
+```
+cd mip-local
+git checkout -b master
+```
+
+Set remote "origin" to a bitbucket repository where you will upload the config
+	
+```
+git remote add origin https://<username>@bitbucket.org/hbpmip_private/<instance-name>-infrastructure.git
+```
+
+It is also possible to use an ssh connection, but this requires an ssh key registered on the repository and a network configuration allowing ssh access to bitbucket. In that case, use the following remote repository:
+
+```
+git remote add origin git@bitbucket.org:hbpmip_private/<instance-name>-infrastructure.git
+```
+	
 
 ## Deployment validation
 
@@ -471,6 +541,15 @@ Please be advised this is drastic steps which will remove entirely several softw
 
 ## Troubleshooting
 
+Running several times the `setup.sh` script might solve some issues: in case of error, run it one more time to check if it fails at the same step.
+
+In case the installation fails because a package (docker-ce, marathon, zookeeper or mesos) cannot be downgraded or installed because of previous installs, use the following commands (possibly purge only one package rather than all):
+
+```sh
+$ sudo apt purge -y --allow-change-held-packages docker-ce marathon zookeeper mesos
+$ sudo apt install -y --allow-downgrades --allow-change-held-packages docker-ce=17.09.0~ce-0~ubuntu
+```
+
 [//]: # (from Slack)
 
 > Zookeeper in an unstable state, cannot be restarted
@@ -478,4 +557,4 @@ Please be advised this is drastic steps which will remove entirely several softw
 > -> ```/common/scripts/fix-mesos-cluster.sh --reset, then ./setup.sh ```
 
 
-See documentation folder on Github for a few specific fixes.
+The documentation folder on Github contains a few specific fixes.

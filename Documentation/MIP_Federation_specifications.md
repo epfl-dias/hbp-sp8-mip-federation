@@ -1,6 +1,6 @@
 # MIP Federation specifications
 
-**Warning:** This document is work in progress. The on-going work on the second Federation PoC and the Federation demo setup might lead to improvement to the Federation specifications.
+**Warning:** This document is work in progress. The on-going work might lead to improvement to the Federation specifications.
 
 Contents:
 
@@ -44,7 +44,7 @@ The software Exareme will expose federated analysis functionalities to the Feder
 
 ### Regarding Docker swarm
 
-As written in the official documentation, "Docker includes a _swarm mode_ for natively managing a cluster of Docker Engines called a _swarm_". The Docker swarm functionality creates a link among distant Docker engines. A Docker engine can only be part of one swarm, so all the Docker Engine instances running on the Federation servers will be part of the Federation Swarm. (The Federation servers cannot be part of another swarm, assuming the normal and recommanded setup where only one Docker engine runs on each server.)
+As written in the official documentation, "Docker includes a _swarm mode_ for natively managing a cluster of Docker Engines called a _swarm_". The Docker swarm functionality creates a link among distant Docker engines. A Docker engine can only be part of one swarm, so all the Docker Engine instances running on the Federation servers will be part of the Federation Swarm. (In other words, the Federation servers cannot be part of another swarm, assuming the normal and recommanded setup where only one Docker engine runs on each server.)
 
 The swarm is created by the Swarm Manager; other Federation nodes will join as Swarm Workers. The Federation Swarm Manager will create a `mip-federation` network shared by the swarm nodes. All communications on this network will be encrypted using the option `--opt encrypted`.
 
@@ -97,7 +97,7 @@ The node must also host a deployed MIP Local, or at least an LDSM instance. The 
 
 ### Initial setup
 
-This document does not cover the deployment of MIP Local at the Federation nodes. It does not include either the deployment and configuration of the Federation Web Portal, for which no information is available yet (12.2017).
+This document does not cover the deployment of MIP Local at the Federation nodes (this is documented [here](https://github.com/HBPMedical/mip-federation/blob/master/Documentation/MIP_Local_deployment.md)). It does not include either the deployment and configuration of the Federation Web Portal, for which no information is available yet (12.2017).
 
 In summary, the initial setup expected is the following:
 
@@ -139,7 +139,7 @@ Once the Swarm is created, the Exareme master will be run on the swarm. The Fede
 
 ### Deployment of other MIP nodes
 
-MIP Local will mostly function as previously: the docker containers will be run locally, and can be deployed with the MIP Local deployment scripts (assuming that everything runs on the same server or that the deployment scripts are adapted to deploy individual building blocks).
+MIP Local will function as previously: the docker containers will be run locally, and can be deployed with the MIP Local deployment scripts (assuming that everything runs on the same server or that the deployment scripts are adapted to deploy individual building blocks).
 
 The only supplementary deployment step to perform at the node is to join the swarm, using the token provided by the swarm manager.
 
@@ -203,7 +203,7 @@ On the other hand, Exareme will not work properly if all the expected worker nod
 
 The swarm cannot recover if it definitively loses its manager (or quorum of manager) because of "data corruption or hardware failures". In this case, the only option will be to remove the previous swarm and build a new one, meaning that each node will have to perform a "join" command again.
 
-To increase stability, the manager role can be duplicated on several nodes (including worker nodes). For more information, see docker documentation about <a href="https://docs.docker.com/engine/swarm/join-nodes/#join-as-a-manager-node">adding a manager node</a> and <a href="https://docs.docker.com/engine/swarm/admin_guide/#add-manager-nodes-for-fault-tolerance">fault tolerance</a>.
+To increase stability, the manager role can be duplicated on several nodes (including worker nodes). For more information, see Docker documentation about <a href="https://docs.docker.com/engine/swarm/join-nodes/#join-as-a-manager-node">adding a manager node</a> and <a href="https://docs.docker.com/engine/swarm/admin_guide/#add-manager-nodes-for-fault-tolerance">fault tolerance</a>.
 
 ## Security 
 
