@@ -28,24 +28,20 @@ set -e
 	docker swarm init --advertise-addr=${MASTER_IP}
 )
 
-# Portainer, a webUI for Docker Swarm
-if true
+# Portainer, a WebUI for Docker Swarm
+if ${PORTAINER_ENABLED}
 then
-(
-	portainer_data=/srv/portainer
-	test -d ${portainer_data} \
-		|| mkdir -p ${portainer_data} \
-		|| ( echo Failed to create ${portainer_data}; exit 1 )
+	test -d ${PORTAINER_DATA} \
+		|| mkdir -p ${PORTAINER_DATA} \
+		|| ( echo Failed to create ${PORTAINER_DATA}; exit 1 )
 
 	docker service create \
 		--name portainer \
 		--publish ${PORTAINER_PORT}:9000 \
 		--constraint 'node.role == manager' \
 		--mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
-		--mount type=bind,src=${portainer_data},dst=/data \
-		portainer/portainer \
-		-H unix:///var/run/docker.sock
-)
+		--mount type=bind,src=${PORTAINER_DATA},dst=/data \
+		${PORTAINER_IMAGE}${PORTAINER_VERSION}
 fi
 
 docker network create \
