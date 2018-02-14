@@ -22,9 +22,18 @@ fi
 if ${SHOW_SETTINGS};
 then
 	echo "Current settings:"
-	for v in $(grep '^:' settings.default.sh|cut -c 5- |cut -d: -f1)
-	do
+fi
+
+for v in $(grep '^:' settings.default.sh|cut -c 5- |cut -d: -f1)
+do
+	eval "export $v=\"\$$v\""
+	if ${SHOW_SETTINGS};
+	then
 		eval "echo $v=\$$v"
-	done
+	fi
+done
+
+if ${SHOW_SETTINGS};
+then
 	echo
 fi

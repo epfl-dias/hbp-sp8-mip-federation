@@ -58,16 +58,6 @@ start_node() {
 
 		. ./settings.sh ${FEDERATION_NODE}
 
-		# Export the settings to the docker-compose files
-		export FEDERATION_NODE
-
-		export LDSM_USERNAME LDSM_PASSWORD LDSM_HOST LDSM_PORT LDSM_DB
-
-		export CONSUL_IMAGE CONSUL_VERSION
-		export EXAREME_IMAGE EXAREME_VERSION
-		export EXAREME_ROLE EXAREME_KEYSTORE EXAREME_MODE EXAREME_WORKERS_WAIT
-		export EXAREME_LDSM_ENDPOINT EXAREME_LDSM_RESULTS EXAREME_LDSM_DATAKEY
-
 		# Finally deploy the stack
 		docker stack deploy -c docker-compose-${EXAREME_ROLE}.yml ${FEDERATION_NODE}
 	)
