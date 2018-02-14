@@ -36,6 +36,7 @@ then
 		|| ( echo Failed to create ${PORTAINER_DATA}; exit 1 )
 
 	docker service create \
+		--detach=true \
 		--name portainer \
 		--publish ${PORTAINER_PORT}:9000 \
 		--constraint 'node.role == manager' \
