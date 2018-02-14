@@ -39,7 +39,7 @@ The Federation manager server must have a fixed IP address; other nodes must hav
    ```sh
    $ sudo docker swarm join --token <Swarm Token> <Master Node URL>
    ```
-   
+
    The command to execute on the worker node, including the `Swarm Token` and the `Master Node URL`, is provided when performing point 1. It can be obtained again at any time from the manager, with the following command:
 
    ```sh
@@ -96,37 +96,49 @@ The following are required on all nodes. This is installed by default as part of
    ```sh
    $ sudo apt-get update
    $ sudo apt-get install \
-	    apt-transport-https \
-	    ca-certificates \
-	    curl \
-	    software-properties-common
-	$ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+         apt-transport-https \
+         ca-certificates \
+         curl \
+         software-properties-common
+   $ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
    ```
 
 2. Check the finger print: `9DC8 5822 9FC7 DD38 854A E2D8 8D81 803C 0EBF CD88`
 
    ```sh
-	$ sudo apt-key fingerprint 0EBFCD88
-	pub   4096R/0EBFCD88 2017-02-22
-      Key fingerprint = 9DC8 5822 9FC7 DD38 854A  E2D8 8D81 803C 0EBF CD88
-	uid                  Docker Release (CE deb) <docker@docker.com>
-	sub   4096R/F273FCD8 2017-02-22
+   $ sudo apt-key fingerprint 0EBFCD88
+   pub   4096R/0EBFCD88 2017-02-22
+   Key fingerprint = 9DC8 5822 9FC7 DD38 854A  E2D8 8D81 803C 0EBF CD88
+   uid                  Docker Release (CE deb) <docker@docker.com>
+   sub   4096R/F273FCD8 2017-02-22
    ```
 
 3. Add the Docker official repository
 
-  ```sh
-  $ sudo add-apt-repository \
-	   "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-	   $(lsb_release -cs) \
-	   stable"
-  ```
+   ```sh
+   $ sudo add-apt-repository \
+          "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+          $(lsb_release -cs) \
+          stable"
+   ```
 
 4. Update the index and install docker:
 
-  ```sh
-  $ sudo apt-get update
-  $ sudo apt-get install docker-ce
-  ```
-  
-5. TODO: Run PostgresRAW and PostgresRAW-UI, create necessary tables / files, expose on correct ports.
+   ```sh
+   $ sudo apt-get update
+   $ sudo apt-get install docker-ce
+   $ sudo usermod -G docker -a ubuntu
+   ```
+
+5. Install docker-compose:
+
+   ```sh
+   $ sudo curl -L https://github.com/docker/compose/releases/download/1.18.0/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
+   $ sudo chmod +x /usr/local/bin/docker-compose
+   ```
+
+6. If necessary, adapt the Database configuration options in `settings.local.sh`. Check `settings.default.ch` to see the databases which are currently used by default. You can extend the list as well.
+
+7. Load the binary data with `./load_data.sh`, then add in the folder pointed by `${DB_DATASETS}` your CSV files.
+
+8. Start the database services with `./run_db.sh up -d`
