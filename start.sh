@@ -47,6 +47,7 @@ ${federation_nodes}
 Errors: This script will exit with the following error codes:
  1	No arguments provided
  2	Federation node is incorrect
+ 3	Federation node role is incorrect
 EOT
 }
 
@@ -59,7 +60,20 @@ start_node() {
 		. ./settings.sh ${FEDERATION_NODE}
 
 		# Finally deploy the stack
-		docker stack deploy -c docker-compose-${EXAREME_ROLE}.yml ${FEDERATION_NODE}
+		case ${EXAREME_ROLE} in
+			manager)
+				# Wait for managers to have started
+				docker stack deploy -c docker-compose-${EXAREME_ROLE}.yml ${FEDERATION_NODE}
+			;;
+			worker)
+				# Start in the background the workers
+				docker stack deploy -c docker-compose-${EXAREME_ROLE}.yml ${FEDERATION_NODE} &
+			;;
+			*)
+				echo "Unknown node role!"
+				exit 3
+			;;
+		esac
 	)
 }
 
@@ -169,7 +183,7 @@ then
 	if [ -z "${FEDERATION_NODE}" ]; then
 		echo "Invalid federation node name"
 		usage
-		exit 3
+		exit 2
 	fi
 
 	case ${FEDERATION_NODE} in
@@ -184,5 +198,3 @@ then
 else
 	start_nodes $*
 fi
-
-exit 0

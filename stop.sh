@@ -58,7 +58,7 @@ stop_node() {
 		export FEDERATION_NODE
 
 		# Finally stop the stack
-		docker stack rm ${FEDERATION_NODE}
+		docker stack rm ${FEDERATION_NODE} &
 	)
 }
 
