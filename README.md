@@ -127,7 +127,6 @@ The following are required on all nodes. This is installed by default as part of
    ```sh
    $ sudo apt-get update
    $ sudo apt-get install docker-ce
-   $ sudo usermod -G docker -a ubuntu
    ```
 
 5. Install docker-compose:
@@ -137,8 +136,14 @@ The following are required on all nodes. This is installed by default as part of
    $ sudo chmod +x /usr/local/bin/docker-compose
    ```
 
-6. If necessary, adapt the Database configuration options in `settings.local.sh`. Check `settings.default.ch` to see the databases which are currently used by default. You can extend the list as well.
+6. Add your user to the `docker`group, so that you don't need to `sudo` all the time:
 
-7. Load the binary data with `./load_data.sh`, then add in the folder pointed by `${DB_DATASETS}` your CSV files.
+   ```sh
+   $ sudo usermod -G docker -a <username>
+   ```
 
-8. Start the database services with `./run_db.sh up -d`
+7. If necessary, adapt the Database configuration options in `settings.local.sh`. Check `settings.default.ch` to see the databases which are currently used by default. You can extend the list as well.
+
+8. Load the binary data with `./load_data.sh`, then add in the folder pointed by `${DB_DATASETS}` your CSV files.
+
+9. Start the database services with `./run_db.sh up -d`
