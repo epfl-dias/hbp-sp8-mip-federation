@@ -51,7 +51,7 @@ Specific public services provided by the MIP to the end-users will require their
     ```
 
 4. Docker Swarm ports for Manager nodes 
-   
+  
    **The following is required only on the Docker Swarm manager computers.**
 
     ```sh
@@ -152,7 +152,7 @@ Specific public services provided by the MIP to the end-users will require their
     ```
 
     * For Manager nodes 
-   
+
     ```sh
     $ sudo firewall-cmd --info-service=docker-swarm-manager
     ```

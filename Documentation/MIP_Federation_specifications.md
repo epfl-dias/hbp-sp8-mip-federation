@@ -17,7 +17,7 @@ The MIP Federation allows to connect multiple MIP Local instances securely over 
 
 ### Federation architecture
 
-The following schema shows on overview of the working principle of the Federation and of its infrastructure. The Federation is composed of one or more Federation manager nodes, and of any number of Federation nodes, usuallay hospitals hosting a MIP Local instance and sharing data on the Federation.
+The following schema shows on overview of the working principle of the Federation and of its infrastructure. The Federation is composed of one or more Federation manager nodes, and of any number of Federation nodes, usually hospitals hosting a MIP Local instance and sharing data on the Federation.
 
 ![Image](Federation_schema.001.jpg)
 
@@ -27,7 +27,7 @@ The Federation Manager server will host the following Federation elements (along
 
 - Federation Web Portal (container run locally)
 - Federation Swarm Manager
-- Consul (container run on the swarm, service published on port 8500)
+- Consul (container run on the swarm)
 - Portainer (optional UI for swarm management, container run on the swarm, service published on port 9000)
 - Exareme Master (container run on the swarm, service published on port 9090)
 
@@ -52,7 +52,6 @@ Docker containers can be run in two ways:
 
 - On the swarm. To run on the swarm, the containers must be started **from the Swarm Manager**. Containers started directly on the worker nodes cannot join the swarm for security reasons. This means that all Exareme containers (Master and Worker instances) will be started from the Federation Swarm Manager.
 - Outside the swarm. Docker containers running outside the swarm can be started locally as usual on the worker nodes. All Docker services composing MIP Local will be run locally, without access to the swarm or the other MIP nodes.
-
 
 
 ### Planned Federation infrastructure
@@ -128,8 +127,8 @@ Once the Swarm is created, the Exareme master will be run on the swarm. The Fede
 - Create the swarm by running the setupFederationInfrastructure.sh script.
   
    ```
-   git clone https://github.com/HBPMedical/Federation-PoC.git
-   cd Federation-PoC
+   git clone https://github.com/HBPMedical/mip-federation.git
+   cd mip-federation
    ./setupFederationInfrastructure.sh
    ```
 
@@ -151,7 +150,7 @@ The only supplementary deployment step to perform at the node is to join the swa
 	$ sudo docker swarm join-token worker
 	```
 
-- On the node, use the command retrived at the previous step to join the Federation swarm:
+- On the node, use the command retrieved at the previous step to join the Federation swarm, which looks like:
 
 	```
 	$ docker swarm join --token <Swarm Token> <Master Node URL>

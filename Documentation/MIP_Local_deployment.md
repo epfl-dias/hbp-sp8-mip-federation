@@ -61,14 +61,14 @@ This file lists the building blocks that will be installed. In theory, it can be
 
 - Ubuntu 16.04 system (partial support for RHEL).
 - Matlab R2016b. (Required for the Data Factory. Alternatively the MIP can be installed without the Data Factory: see below the corresponding deployment option.)
-- According to the official documentation, python version 2.7 and the library jmespath need to be installed beforehand. 
-   - For ubuntu:
+- According to the official documentation, python version 2.7 and the library `jmespath` need to be installed beforehand.
+- For ubuntu:
 
-   		```
-   		sudo apt install python2.7 
-   		ln -s /usr/bin/python2.7 /usr/bin/python
-   		sudo apt install python-jmespath
-   		```
+	```
+	sudo apt install python2.7
+	ln -s /usr/bin/python2.7 /usr/bin/python
+	sudo apt install python-jmespath
+	```
 
 
 ## Network configuration
@@ -105,7 +105,7 @@ Some ports must be open for intra-server connections (accept only requests comin
 Untested / unexplained list of supplementary ports to open:
 
 firewall\_open\_tcp\_ports:
- 
+
   - 443 # https (not always required?)
   - 3389 # xrdp
   - 4400 # [dev] chronos (not always required?)
@@ -138,7 +138,7 @@ Further information:
 
 [... Users] can create accounts on the HBP Portal (see https://mip.humanbrainproject.eu/intro) through invitation, which means that the access control is not stringent.
 [... Only] users that can access [the local] network and have an HBP account would be able to access MIP Local. In case you would need more stringent access control, we would need to implement in your MIP-Local a whitelist of authorized HBP accounts.  
- 
+
 In order to activate the user access using the authentication through the HBP Portal, we would need a private DNS alias for your MIP local machine, something like ‘mip.your\_domain\_name’. [...]
 
 ## Known limitations
@@ -350,14 +350,14 @@ At the time of writing (25.01.2018), the <a href="https://github.com/HBPMedical/
 
 4. Once the configuration script ends successfully with a message "Generation of the standard configuration for MIP Local complete!", commit the modifications before continuing.
 	
-	```
+	```sh
 	git add .
 	git commit -m "Configuration for MIP Local"
 	```
 
 5. Run the setup script, twice if required.
 
-	```
+	```sh
 	./setup.sh
 	```
 	
@@ -376,14 +376,14 @@ The secure key generated during the configuration phase (which requests the pass
 
 The most important file to encrypt is `mip-local/envs/mip-local/etc/ansible/host_vars/localhost`. You can make sure it will be encrypted by running the following command:
 
-```
+```sh
 git-crypt status | grep -v ^not
     encrypted: envs/mip-local/etc/ansible/host_vars/localhost
 ```
 
 To give access to the encrypted configuration to the maintenance team, the public gpg key of a member of the team must be obtained and copied to the server. The member can then be authorised following these steps:
 
-```
+```sh
 gpg --import <path>/<key-name.key>
 gpg --sign-key the-public-key-id # This id is given by the previous command under "gpg: key xxxxxxxx"
 git-crypt add-gpg-user the-public-key-id
@@ -391,29 +391,29 @@ git-crypt add-gpg-user the-public-key-id
 
 The existing keys can be listed with:
 
-```
+```sh
 gpg --list-secret-keys
 ```
-	
+
 Create a local branch "master" or another name, depending on which branch you want to push the configuration.
-	
-```
+
+```sh
 cd mip-local
 git checkout -b master
 ```
 
 Set remote "origin" to a bitbucket repository where you will upload the config
-	
-```
+
+```sh
 git remote add origin https://<username>@bitbucket.org/hbpmip_private/<instance-name>-infrastructure.git
 ```
 
 It is also possible to use an ssh connection, but this requires an ssh key registered on the repository and a network configuration allowing ssh access to bitbucket. In that case, use the following remote repository:
 
-```
+```sh
 git remote add origin git@bitbucket.org:hbpmip_private/<instance-name>-infrastructure.git
 ```
-	
+
 
 ## Deployment validation
 
@@ -431,7 +431,7 @@ The PostgresRAW-UI can be validated following this <a href="https://drive.google
 
 The ports and credentials to access the databases used in the MIP can be found in these files:
 
-```
+```sh
 cat install_dir/envs/mip-local/etc/ansible/host_vars/localhost
 cat install_dir/vars/hospital-database/endpoints.yml
 cat install_dir/vars/reference/endpoints.yml
@@ -439,7 +439,7 @@ cat install_dir/vars/reference/endpoints.yml
 
 Adapt this command to connect to the databases:
 
-```
+```sh
 psql -U ldsm -p 31432 -h hostname
 ```
 
@@ -452,7 +452,7 @@ The last instructions provided to restart it are:
 
 [//]: # (Slack, MIP-Local & IAAN workspace, general channel, 06.12.2017)
 
-```
+```sh
 ./common/scripts/fix-mesos-cluster.sh --reset
 ./setup.sh
 ```
@@ -465,7 +465,7 @@ Before an updated version of the installer can be provided, it might be necessar
 
 
 > When you perform an upgrade, in most cases you will not need to run again the pre-configuration script mip-local-configuration.sh.
->  
+> 
 > In the few cases where that is necessary, for example if you want to install a new component such as the Data Factory or there has been a big update that affects configuration, then you need to be careful about the changes that this script brings to the configuration. For example, passwords are always re-generated. But the passwords for the existing databases should not be modified. To counter that, you can use Git features and do a review on all changes, line by line, and commit only the changes that are actually needed. 
 
 
@@ -480,17 +480,19 @@ Draft guidelines to add clinical data:
 
 [//]: # (from meeting on January 9th, 2018; untested)
 
->	- Create a clone of gitlab project https://github.com/HBPMedical/mip-cde-meta-db-setup.
+>```sh
+>- Create a clone of gitlab project https://github.com/HBPMedical/mip-cde-meta-db-setup.
+>```
 > 	- Modify clm.patch.json so that it can modify the default variables.json file to add the relevant new variables.
-> 	- Adapt first line of Docker file to select / define the version / rename the Docker image, from hbpmip/mip-cde-meta-db-setup to something else (?)
-> 	- Create the docker image and push it to gitlab (?)
-> 	- Once the MIP-Local configuration for the deployment exist, modify (line 20 of) the file
-> 	   envs/mip-local/etc/ansible/group_vars/reference to reference the right docker image
-> 	- Run setup.sh so that the new docker image is run and copies the data in the meta-db database
-> 	- Restart all services of the following building blocks from Marathon (if necessary, scale them down to 0, then up again to 1)
-> 		- web portal
-> 		- woken
-> 		- data factory
+>		- Adapt first line of Docker file to select / define the version / rename the Docker image, from hbpmip/mip-cde-meta-db-setup to something else (?)
+>		- Create the docker image and push it to gitlab (?)
+>		- Once the MIP-Local configuration for the deployment exist, modify (line 20 of) the file
+>		   envs/mip-local/etc/ansible/group_vars/reference to reference the right docker image
+>		- Run setup.sh so that the new docker image is run and copies the data in the meta-db database
+>		- Restart all services of the following building blocks from Marathon (if necessary, scale them down to 0, then up again to 1)
+>			- web portal
+>			- woken
+>			- data factory
 
 
 
@@ -520,11 +522,11 @@ Please be advised this is drastic steps which will remove entirely several softw
 	$ sudo rm -rf /srv/docker/ldsmdb /srv/docker/research-db
     ```
 
-   ------
+------
    **WARNING:**
    Backup your data before executing the command above. This will remove anything placed inside databases, as well as stored insides docker images.
 
-   ------
+------
 
 3. Reload the system initialisation scripts, and reboot:
 
@@ -553,7 +555,7 @@ $ sudo apt install -y --allow-downgrades --allow-change-held-packages docker-ce=
 [//]: # (from Slack)
 
 > Zookeeper in an unstable state, cannot be restarted
->  
+> 
 > -> ```/common/scripts/fix-mesos-cluster.sh --reset, then ./setup.sh ```
 
 
