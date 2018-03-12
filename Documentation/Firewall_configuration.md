@@ -12,7 +12,7 @@ The following ports and protocols are required for the proper function of the Do
 
  * On **all** the Docker hosts which are part of the Swarm (federation):
    * **TCP: 7946**
-   * **UDP: 7956**
+   * **UDP: 7946**
    * **UDP: 4789**
    * **Protocol 50 (ESP)**
 
