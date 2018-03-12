@@ -29,6 +29,8 @@
 : ${DB_UI_IMAGE:="hbpmip/postgresraw-ui"}
 : ${DB_UI_VERSION:=":v1.4"}
 : ${DB_UI_PORT:="31555"}
+: ${DB_UI_LOCAL_SOURCE:="mip_cde_features harmonized_clinical_data"}
+: ${DB_UI_FEDERATION_SOURCE:="harmonized_clinical_data"}
 
 # Databases Definitions:
 #  1. To add a new DB, copy the last 3 lines below and increment the id
