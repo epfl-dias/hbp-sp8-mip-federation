@@ -1,5 +1,5 @@
 #!/bin/sh
-#                    Copyright (c) 2017-2017
+#                    Copyright (c) 2017-2018
 #   Data Intensive Applications and Systems Labaratory (DIAS)
 #            Ecole Polytechnique Federale de Lausanne
 #
@@ -17,21 +17,19 @@
 # DISCLAIM ANY LIABILITY OF ANY KIND FOR ANY DAMAGES WHATSOEVER RESULTING FROM THE
 # USE OF THIS SOFTWARE.
 
-set -e
-
 # Import settings
 . ./settings.sh
 
-# Master node/Manager
-(
-	# Initialize swarm
-	docker swarm init --advertise-addr=${MASTER_IP}
-)
+# Permanent storage for Portainer
+test -d ${PORTAINER_DATA} \
+	|| mkdir -p ${PORTAINER_DATA} \
+	|| ( echo Failed to create ${PORTAINER_DATA}; exit 1 )
 
-docker network create \
-	--driver=overlay \
-	--opt encrypted \
-	--subnet=10.20.30.0/24 \
-	--ip-range=10.20.30.0/24 \
-	--gateway=10.20.30.254 \
-	mip-federation
+docker service create \
+	--publish ${PORTAINER_PORT}:9000 \
+	--constraint 'node.role == manager' \
+	--mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
+	--mount type=bind,src=${PORTAINER_DATA},dst=/data \
+	--name portainer \
+	${PORTAINER_IMAGE}${PORTAINER_VERSION}
+
