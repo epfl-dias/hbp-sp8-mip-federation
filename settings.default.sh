@@ -18,7 +18,7 @@
 # DATABASES
 # Service Parameters
 : ${DB_IMAGE:="hbpmip/postgresraw"}
-: ${DB_VERSION:=":v1.2"}
+: ${DB_VERSION:=":v1.3"}
 : ${DB_HOST:="db"}
 : ${DB_PORT:="31432"}
 : ${DB_DATA:="${PWD}/postgres"}
@@ -27,7 +27,7 @@
 : ${DB_PASSWORD_ADMIN:="test"}
 
 : ${DB_UI_IMAGE:="hbpmip/postgresraw-ui"}
-: ${DB_UI_VERSION:=":v1.4"}
+: ${DB_UI_VERSION:=":v1.5"}
 : ${DB_UI_PORT:="31555"}
 : ${DB_UI_LOCAL_SOURCES:="mip_cde_features harmonized_clinical_data"}
 : ${DB_UI_FEDERATION_SOURCES:="harmonized_clinical_data"}
@@ -90,7 +90,7 @@
 : ${CONSUL_VERSION:="latest"}
 
 : ${EXAREME_IMAGE:="hbpmip/exareme"}
-: ${EXAREME_VERSION:="v3"}
+: ${EXAREME_VERSION:="v5"}
 : ${EXAREME_ROLE:=""} # The default value is set to the federation node role (worker or manager)
 : ${EXAREME_KEYSTORE_PORT:="8500"}
 : ${EXAREME_KEYSTORE:="exareme-keystore:${EXAREME_KEYSTORE_PORT}"}
