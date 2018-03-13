@@ -23,10 +23,6 @@
 # 1. Create all the DB at once
 echo "Create databases..."
 
-# Ignore exported port for the DB, as we are accessing it directly on
-# the local private network
-export DB_PORT=5432
-
 created_network=false
 if ! docker network ls | grep -q ${MIP_PRIVATE_NETWORK}
 then
@@ -50,7 +46,7 @@ db_id=$(docker run --rm -d \
 	-v ${DB_DATA}:/data:rw \
 	-v ${DB_DATASETS}:/datasets:ro \
 	--network=${MIP_PRIVATE_NETWORK} \
-	--name ${DB_HOST} \
+	--name db \
 	${DB_IMAGE}${DB_VERSION}
 	)
 
@@ -68,8 +64,8 @@ done
 sleep 5
 
 docker run --rm \
-	-e DB_HOST="${DB_HOST}" \
-	-e DB_PORT="${DB_PORT}" \
+	-e DB_HOST="db" \
+	-e DB_PORT="5432" \
 	-e DB_ADMIN_USER="${DB_USER_ADMIN}" \
 	-e DB_ADMIN_PASSWORD="${DB_PASSWORD_ADMIN}" \
 	${db_list} \
@@ -87,8 +83,8 @@ do
 	echo "Executing ${img}${version}"
 
 	docker run --rm \
-		-e FLYWAY_HOST="${DB_HOST}" \
-		-e FLYWAY_PORT="${DB_PORT}" \
+		-e FLYWAY_HOST="db" \
+		-e FLYWAY_PORT="5432" \
 		-e FLYWAY_USER="${DB_USER_ADMIN}" \
 		-e FLYWAY_PASSWORD="${DB_PASSWORD_ADMIN}" \
 		-e FLYWAY_DATABASE_NAME="${db}" \
