@@ -31,10 +31,19 @@ The Federation manager server must have a fixed IP address; other nodes must hav
 
    ```sh
    $ sudo ./setupFederationInfrastructure.sh
+   # If you have multiple network interfaces, you might need to specify on which one to publish the swarm:
+   $ MASTER_IP=<The Ip where the swarm should be published> sudo ./setupFederationInfrastructure.sh
    ```
    The output will include the command to add a node to the swarm.
 
-2. On each worker node (a.k.a node of the federation), run the swarm join command.
+2. *Optional:* Start a web interface (Portainer) to Docker.
+
+   ```sh
+   $ ./portainer.sh
+   ```
+   You can contact it on `http://localhost:9000/` by default.
+
+3. On each worker node (a.k.a node of the federation), run the swarm join command.
 
    ```sh
    $ sudo docker swarm join --token <Swarm Token> <Master Node URL>
@@ -49,7 +58,7 @@ The Federation manager server must have a fixed IP address; other nodes must hav
    docker swarm join --token SWMTKN-1-11jmbp9n3rbwyw23m2q51h4jo4o1nus4oqxf3rk7s7lwf7b537-9xakyj8dxmvb0p3ffhpv5y6g3 10.2.1.1:2377
    ```
 
-3. Add informative name labels for each worker node, on the swarm master.
+4. Add informative name labels for each worker node, on the swarm master.
 
    ```sh
    $ sudo docker node update --label-add name=<Alias> <node hostname>
@@ -58,7 +67,7 @@ The Federation manager server must have a fixed IP address; other nodes must hav
    * `<node hostname>` can be found with `docker node ls`
    * `<Alias>` will be used when bringing up the services and should be a short descriptive name.
 
-4. Deploy the Federation service
+5. Deploy the Federation service
 
    ```sh
    $ sudo ./start.sh <Alias>
@@ -91,59 +100,35 @@ Settings are taken in the following order of precedence:
 
 The following are required on all nodes. This is installed by default as part of the MIP, but can be installed manually when MIP Local is not present.
 
-1. Install docker
+1. Install docker and docker-compose
 
    ```sh
-   $ sudo apt-get update
-   $ sudo apt-get install \
-         apt-transport-https \
-         ca-certificates \
-         curl \
-         software-properties-common
-   $ curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+   $ sudo install-$OS.sh # OS=ubuntu or OS=redhat, depending on your system
    ```
 
-2. Check the finger print: `9DC8 5822 9FC7 DD38 854A E2D8 8D81 803C 0EBF CD88`
-
-   ```sh
-   $ sudo apt-key fingerprint 0EBFCD88
-   pub   4096R/0EBFCD88 2017-02-22
-   Key fingerprint = 9DC8 5822 9FC7 DD38 854A  E2D8 8D81 803C 0EBF CD88
-   uid                  Docker Release (CE deb) <docker@docker.com>
-   sub   4096R/F273FCD8 2017-02-22
-   ```
-
-3. Add the Docker official repository
-
-   ```sh
-   $ sudo add-apt-repository \
-          "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
-          $(lsb_release -cs) \
-          stable"
-   ```
-
-4. Update the index and install docker:
-
-   ```sh
-   $ sudo apt-get update
-   $ sudo apt-get install docker-ce
-   ```
-
-5. Install docker-compose:
-
-   ```sh
-   $ sudo curl -L https://github.com/docker/compose/releases/download/1.18.0/docker-compose-`uname -s`-`uname -m` -o /usr/local/bin/docker-compose
-   $ sudo chmod +x /usr/local/bin/docker-compose
-   ```
-
-6. Add your user to the `docker`group, so that you don't need to `sudo` all the time:
+2. Add your user to the `docker`group, so that you don't need to `sudo` all the time:
 
    ```sh
    $ sudo usermod -G docker -a <username>
    ```
 
-7. If necessary, adapt the Database configuration options in `settings.local.sh`. Check `settings.default.ch` to see the databases which are currently used by default. You can extend the list as well.
+3. If necessary, adapt the Database configuration options in `settings.local.sh`. Check `settings.default.ch` to see the databases which are currently used by default. You can extend the list as well.
 
-8. Load the binary data with `./load_data.sh`, then add in the folder pointed by `${DB_DATASETS}` your CSV files.
+4. If you want to use the research data, which is available only in private repositories:
 
-9. Start the database services with `./run_db.sh up -d`
+   ```sh
+   $ docker login registry.gitlab.com
+   ```
+
+5. Load the binary data with `./load_data.sh`.
+
+6. Add in the folder pointed by `${DB_DATASETS}` your CSV files, or if you want to only provide access to research data, add:
+
+   ```sh
+   : ${DB_UI_FEDERATION_SOURCES:="mip_cde_features"}
+   ```
+   in `settings.local.sh` (You might have to create the file).
+
+7. Start the database services with `./run_db.sh up -d`
+
+8. Start the federation services as described above.
