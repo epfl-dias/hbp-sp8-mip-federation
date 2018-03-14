@@ -12,8 +12,8 @@ The steps to deploy the Federation are the following:
 
 - Setup the manager node(s).
 - Add the worker nodes.
-- Add name labels to the nodes to allow proper assignation of the different services.
-- Start "services", which are described in docker-compose.yml files: Exareme, Consul and Portainer.
+- Add `name` labels to the nodes to allow proper assignation of the different services.
+- Start *services*, which are described in docker-compose.yml files: Exareme, Consul, etc…
 
 In the following we are going to use only one master node. More can be added for improved availability.
 
@@ -106,7 +106,7 @@ The following are required on all nodes. This is installed by default as part of
    $ sudo install-$OS.sh # OS=ubuntu or OS=redhat, depending on your system
    ```
 
-2. Add your user to the `docker`group, so that you don't need to `sudo` all the time:
+2. Add your user to the `docker` group, so that you don't need to `sudo` all the time:
 
    ```sh
    $ sudo usermod -G docker -a <username>
