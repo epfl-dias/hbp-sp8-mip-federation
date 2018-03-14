@@ -1,36 +1,28 @@
 : ${SHOW_SETTINGS:=false}
 
 #############################################################################
-# Swarm Manager settings
+# Global settings
 : ${MASTER_IP:=$(wget http://ipinfo.io/ip -qO -)}
 
 : ${MIP_PRIVATE_NETWORK:="mip_local"}
-: ${COMPOSE_PROJECT_NAME:="mip"}
+: ${COMPOSE_PROJECT_NAME:="mip-federation"}
 
 : ${PORTAINER_IMAGE:="portainer/portainer"}
 : ${PORTAINER_VERSION:=":latest"}
-: ${PORTAINER_HOST:="portainer"}
 : ${PORTAINER_PORT:="9000"}
 : ${PORTAINER_DATA:="${PWD}/portainer"}
-: ${PORTAINER_ENABLED:="true"}
 
 #############################################################################
 # DATABASES
 # Service Parameters
 : ${DB_IMAGE:="hbpmip/postgresraw"}
 : ${DB_VERSION:=":v1.3"}
-: ${DB_HOST:="db"}
-: ${DB_PORT:="31432"}
+: ${DB_HOST:="db-published"} # External hostname, if exposed
+: ${DB_PORT:="31432"} # External port, if exposed
 : ${DB_DATA:="${PWD}/postgres"}
 : ${DB_DATASETS:="${PWD}/datasets"}
 : ${DB_USER_ADMIN:="postgres"}
 : ${DB_PASSWORD_ADMIN:="test"}
-
-: ${DB_UI_IMAGE:="hbpmip/postgresraw-ui"}
-: ${DB_UI_VERSION:=":v1.5"}
-: ${DB_UI_PORT:="31555"}
-: ${DB_UI_LOCAL_SOURCES:="mip_cde_features harmonized_clinical_data"}
-: ${DB_UI_FEDERATION_SOURCES:="harmonized_clinical_data"}
 
 # Databases Definitions:
 #  1. To add a new DB, copy the last 3 lines below and increment the id
@@ -56,14 +48,17 @@
 : ${DB_CREATE_VERSION:=":1.0.0"}
 
 # List of databases to create
-: ${DB_CREATE_LIST:="2"}
+: ${DB_CREATE_LIST:="1 2 3 4"}
 
-: ${METADATA_SETUP_IMAGE:="hbpmip/mip-cde-meta-db-setup"}
-: ${METADATA_SETUP_VERSION:=":1.1.1"}
+#: ${METADATA_SETUP_IMAGE:="hbpmip/sample-meta-db-setup"}
+#: ${METADATA_SETUP_VERSION:=":0.4.0"}
+: ${METADATA_SETUP_IMAGE:="hbpmip/mip-cde-meta-db-setup"} # Stable Config
+: ${METADATA_SETUP_VERSION:=":1.1.1"} # Stable Config
 : ${METADATA_SETUP_DB:=${DB_NAME1}}
 
 : ${SAMPLE_SETUP_IMAGE:="hbpmip/sample-data-db-setup"}
-: ${SAMPLE_SETUP_VERSION:=":0.3.2"}
+#: ${SAMPLE_SETUP_VERSION:=":0.5.0"}
+: ${SAMPLE_SETUP_VERSION:=":0.3.2"} # Stable Config
 : ${SAMPLE_SETUP_DB:=${DB_NAME2}}
 
 : ${ADNI_MERGE_SETUP_IMAGE:="registry.gitlab.com/hbpmip_private/adni-merge-db-setup"}
@@ -83,8 +78,10 @@
 : ${WOKEN_SETUP_DB:=${DB_NAME3}}
 
 # List of databases to populate
-: ${DB_SETUP_LIST:="ADNI_MERGE_SETUP EDSD_SETUP PPMI_SETUP"}
+#: ${DB_SETUP_LIST:="SAMPLE_SETUP"}
+: ${DB_SETUP_LIST:="ADNI_MERGE_SETUP EDSD_SETUP PPMI_SETUP"} # Stable Config
 
+#############################################################################
 # Federation Services
 : ${CONSUL_IMAGE:="progrium/consul"}
 : ${CONSUL_VERSION:="latest"}
@@ -108,3 +105,15 @@
 : ${LDSM_DB:=${DB_NAME2}}
 
 : ${FEDERATION_NODE:=""} # Invalid default value, this a required argument of start.sh
+
+#############################################################################
+# Local Services
+
+#: ${FEATURES_LOCAL_TABLE:="cde_features_a"}
+: ${FEATURES_LOCAL_TABLE:="mip_cde_features"} # Stable Config
+
+: ${DB_UI_IMAGE:="hbpmip/postgresraw-ui"}
+: ${DB_UI_VERSION:=":v1.4"}
+: ${DB_UI_PORT:="31555"} # External port, if exposed
+: ${DB_UI_FEDERATION_SOURCES:="harmonized_clinical_data"}
+: ${DB_UI_LOCAL_SOURCES:="${FEATURES_LOCAL_TABLE} harmonized_clinical_data"}

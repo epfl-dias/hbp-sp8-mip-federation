@@ -30,6 +30,6 @@ docker service create \
 	--constraint 'node.role == manager' \
 	--mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
 	--mount type=bind,src=${PORTAINER_DATA},dst=/data \
-	--name portainer \
+	--name ${COMPOSE_PROJECT_NAME}_portainer \
 	${PORTAINER_IMAGE}${PORTAINER_VERSION}
 
