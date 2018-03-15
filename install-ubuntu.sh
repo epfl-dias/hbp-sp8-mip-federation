@@ -36,7 +36,7 @@ sudo add-apt-repository \
    $(lsb_release -cs) \
    stable"
 sudo apt update
-sudo apt install docker-ce=17.12.1~ce-0~ubuntu
+sudo apt install docker-ce=17.09.1~ce-0~ubuntu
 sudo apt-mark hold docker-ce
 
 # Install docker-compose

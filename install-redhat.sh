@@ -20,6 +20,9 @@
 # Import settings
 . ./settings.sh
 
+# Enable access to the extra repository
+subscription-manager repos --enable=rhel-7-server-extras-rpms
+
 # Following official instructions from:
 #  https://docs.docker.com/install/linux/docker-ce/centos/
 
@@ -40,7 +43,7 @@ Docker Repository correct key is:
 If prompted, check the key is correct and accept it.
 EOT
 
-sudo yum install docker-ce-17.12.0.ce-1
+sudo yum install docker-ce-17.09.1.ce
 sudo yum install yum-versionlock
 sudo yum versionlock docker-ce
 
