@@ -17,8 +17,10 @@
 # Service Parameters
 : ${DB_IMAGE:="hbpmip/postgresraw"}
 : ${DB_VERSION:=":v1.4"}
-: ${DB_HOST:="db-published"} # External hostname, if exposed
-: ${DB_PORT:="31432"} # External port, if exposed
+# If you want to expose the DB, you have to adapt the values below, as well
+# as uncomment the port section in the docker-compose.yml file.
+: ${DB_HOST:="db"} # Internal hostname, if NOT exposed, defined in docker-compose.yml
+: ${DB_PORT:="5432"} # Internal port, if NOT exposed, default PostgreSQL port
 : ${DB_DATA:="${PWD}/postgres"}
 : ${DB_DATASETS:="${PWD}/datasets"}
 : ${DB_USER_ADMIN:="postgres"}
