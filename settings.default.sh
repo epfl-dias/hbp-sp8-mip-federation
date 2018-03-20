@@ -5,7 +5,7 @@
 : ${MASTER_IP:=$(wget http://ipinfo.io/ip -qO -)}
 
 : ${MIP_PRIVATE_NETWORK:="mip_local"}
-: ${COMPOSE_PROJECT_NAME:="mip-federation"}
+: ${COMPOSE_PROJECT_NAME:="mip"}
 
 : ${PORTAINER_IMAGE:="portainer/portainer"}
 : ${PORTAINER_VERSION:=":latest"}
