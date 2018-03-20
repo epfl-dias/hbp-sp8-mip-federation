@@ -92,7 +92,7 @@
 : ${EXAREME_KEYSTORE_PORT:="8500"}
 : ${EXAREME_KEYSTORE:="exareme-keystore:${EXAREME_KEYSTORE_PORT}"}
 : ${EXAREME_MODE:="global"}
-: ${EXAREME_WORKERS_WAIT:="1"} # Wait for N workers
+: ${EXAREME_WORKERS_WAIT:="0"} # Wait for N workers
 : ${EXAREME_LDSM_ENDPOINT:="query"}
 : ${EXAREME_LDSM_RESULTS:="all"}
 : ${EXAREME_LDSM_DATAKEY:="output"} # query used with output, query-start with data
