@@ -54,7 +54,8 @@ Based on the <a href="https://github.com/HBPMedical/mip-microservices-infrastruc
 
 This file lists the building blocks that will be installed. In theory, it can be modified before running setup.sh to install only specific block (this has not been tested). 
 
-**TODO: Test building block deployment and improve documentation. Determine which blocks need to be deployed on the same server, and how to configure the blocks if they are deployed on different servers.**
+
+[//]: # (**TODO: Test building block deployment and improve documentation. Determine which blocks need to be deployed on the same server, and how to configure the blocks if they are deployed on different servers.**)
 
 
 ## Requirements
@@ -89,7 +90,7 @@ The firewall of the server where MIP is deployed must be set up and deny all inc
 - 80 for Web Portal access
 - MIP Local requirements
 - Federation requirements (see Federation documentation)
-- User management requirements (see below)
+- User management requirements (services.humanbrainproject.eu)
 
 **TODO: Obtain user management requirement and reproduce it here.**
 
@@ -102,26 +103,7 @@ Some ports must be open for intra-server connections (accept only requests comin
 - 31433 (Postgres "analytics-db")
 - 31555 (PostgresRAW-UI)
 
-Untested / unexplained list of supplementary ports to open:
-
-firewall\_open\_tcp\_ports:
-
-  - 443 # https (not always required?)
-  - 3389 # xrdp
-  - 4400 # [dev] chronos (not always required?)
-  - 5050 # [dev] mesos (not always required?
-  - 5080 # [dev] marathon (not always required?)
-
-firewall\_open\_udp\_ports:
-
-  - 67 # dhclient
-  - 68 # dhclient
-
-firewall\_whitelisted\_hosts: *(No idea what this is for.)*
-
-  - '155.105.223.24'
-
-**TODO: If possible, get more explicit information. Test configuration of firewall. Determine which ports are only needed locally.**
+**TODO: Get list of ports to open for MIP-Local. Test configuration of firewall. Determine which ports are only needed locally.**
 
 ## User management
 
@@ -130,7 +112,7 @@ The Web Portal of MIP Local can be deployed in two settings:
 - No user management: anybody who has access to the port 80 of the MIP Local server can access the Web Portal and all the data available in the MIP. This can either be
 	- Everybody that has access to the local network, if the firewall is open.
 	- Only users who have access to the server itself, if the firewall prevents external access.
-- User authentification required: every user must obtain credentials to access the Web Portal. In this case, user rights and authentification are managed by the main HBP servers, so network access to these servers must be allowed.
+- User authentification required: every user must obtain credentials to access the Web Portal. In this case, user rights and authentification are managed by the main HBP servers, so network access to these servers must be allowed ([services.humanbrainproject.eu](http://services.humanbrainproject.eu) domain).
 
 Further information:
 
@@ -147,7 +129,7 @@ The following are known limitations of the deployment scripts, version 2.5.3.
 
 - It is currently not possible to deploy MIP Local with a firewall enabled. MIP Local cannot run either with the firewall up, unless the correct rules are configured (see [MIP Local requirements](#mip-local-requirements)). 
 
-- The deployed MIP will include research datasets (PPMI, ADNI and EDSD), but the process to include hospital data in MIP-Local is as yet unclear. **TODO: Obtain information, test, complete dedicated section below**
+- The deployed MIP will include research datasets (PPMI, ADNI and EDSD), but the process to include hospital data in MIP-Local is as yet unclear. **TODO: Obtain information; test; complete dedicated section below**
 
 Note: Clinical data processed and made available in the Local Data Store Mirror (LDSM) will not be visible from the Local Web Portal without further configuration, but they will be available to the Federation if the node is connected (variables included in the CDE only).
 
@@ -165,21 +147,45 @@ At the time of writing (25.01.2018), the <a href="https://github.com/HBPMedical/
 	- credentials for the gitlab repository, to download the research data sets,
 	- sudo access to the target server.
 
-2. Clone the `mip-microservices-infrastructure` git repo in the desired location (here a `mip-infra` folder):
+2. Clone the version 2.5.3 from the `mip-microservices-infrastructure` git repo in the desired location (here a `mip-infra` folder) and cherry-pick two bug fixes:
 
 	```sh
-	git clone --origin mmsi --branch stable https://github.com/HBPMedical/mip-microservices-infrastructure.git mip-local
+	git clone --origin mmsi --branch stable https://github.com/HBPMedical/mip-microservices-infrastructure.git mip-infra
+	cd mip-infra/
+	git cherry-pick f877ddd3e2b6bf937fe6d31f89cd281f81218da3
+	git cherry-pick 44788978c98be4828164eee64024b6a32497c7bf
 	```
-	This will clone the branch "stable"; replace "stable" by a tag or another branch as needed.
+	This will clone the version 2.5.3; replace "2.5.3" by another tag or the "stable" branch as needed.
 	This command will also name the remote repository mmsi.
 	
+	You might want to create a local branch named master, in order to upload the configuration later (optionnal):
+	
 	```
-	./after-git-clone.sh  # Need confirmation whether this is needed or not
-	./after-update.sh  # Need confirmation whether this is needed or not
-	git checkout tags/2.5.3
+	git checkout -b master
 	```
+	
+	Running the following scripts might be needed after cloning or updating the repository, but their use is not documented and it does not seem necessary on a fresh clone:
+	
+	```
+	./after-git-clone.sh
+	./after-update.sh
+	```
+	
 
-3. Run the configuration script:
+3. The versions used for each software can be found and modified in `vi vars/versions.yml`. In particular, use the latest stable versions for the LDSM:
+    
+    ```
+    ldsm_db_version: 'v1.4'
+    postgresraw_ui_version: 'v1.5'
+    ```
+    
+    And apply one more patch to adapt to PostgresRAW-UI version 1.4 or higher:
+    
+    ```
+    git cherry-pick 86b0787ba11b21c4dc9a0fdf64d9bb8bea05d404
+    ```
+
+4. Run the configuration script:
 
 	```
 	./common/scripts/configure-mip-local.sh
@@ -187,52 +193,55 @@ At the time of writing (25.01.2018), the <a href="https://github.com/HBPMedical/
 
 	Provide the requested parameters.
 
-	Summary of requested input:
+	Summary of requested input (and tested parameters):
 
 	```
 	Where will you install MIP Local?
 	1) This machine
 	2) A remote server
-	>
+	> 1
 	
 	Does sudo on this machine requires a password?
 	1) yes
 	2) no
-	>
+	> 1
 	
 	>Which components of MIP Local do you want to install?
 	1) All				     3) Data Factory only
 	2) Web analytics and databases only
-	> 
+	> 1
 	
 	Do you want to store research-grade data in CSV files or in a relational database?
 	1) CSV files
 	2) Relational database
-	> 
+	> 1
 	```
 	**NOTE:** Both options load the research data (ADNI, PPMI and EDSD) in a relational database. The first option will upload the data in the LDSM database using PostgresRAW, and the second in an unofficial postgres database named "research-db".
 	
 	```
 	Please enter an id for the main dataset to process, e.g. 'demo' and a 
 	readable label for it, e.g. 'Demo data'
-	Id for the main dataset > 
-	Label for the main dataset > 
+	Id for the main dataset > demo
+	Label for the main dataset > Demo data
 	
 	Is Matlab 2016b installed on this machine?
 	1) yes
 	2) no
-	>
+	> 1
 	
+	[If "yes":]
 	Enter the root of Matlab installation, e.g. /opt/MATLAB/2016b :
 	path >
 	
 	Do you want to send progress and alerts on data processing to a Slack channel?
 	1) yes
 	2) no
+   > 2
 	
 	Do you want to secure access to the local MIP Web portal?
 	1) yes
 	2) no
+	> 2
 	
 	To enable Google analytics, please enter the Google tracker ID or leave this blank to disable it
 	Google tracker ID > 
@@ -256,10 +265,12 @@ At the time of writing (25.01.2018), the <a href="https://github.com/HBPMedical/
 	}
 	
 	Target server hostname, e.g. myserver . Use ansible_hostname value if you agree with it. 
+	```
+	Apparently, using another hostname than the current one will modify the machine's hostname.
 	
-	Target server FQDN, e.g. myserver.myorg.com . 
-	If the full server name cannot be reached by DNS (ping myserver.myorg.com fails), 
-	you can use the IP address instead:
+	```
+	Target server FQDN, e.g. myserver.myorg.com .If the full server name cannot be reached 
+	by DNS (ping myserver.myorg.com fails), you can use the IP address instead:
 	```
 	
 	If unsure that the `suggested_ansible_fqdn` given above is valid, use the `suggested_IP_address` instead. (Or check if ping works on the `suggested_ansible_fqdn` from another computer.)
@@ -267,9 +278,11 @@ At the time of writing (25.01.2018), the <a href="https://github.com/HBPMedical/
 	
 	```
 	Target server IP address:
+	```
+	Use the suggested `suggested_IP_address` given above.
 	
+	```
 	Base URL for the frontend, for example http://myserver.myorg.com:7000
-	
 	```
 	
 	This is the address the WebPortal will be accessed through.
@@ -285,15 +298,15 @@ At the time of writing (25.01.2018), the <a href="https://github.com/HBPMedical/
 	
 	```
 	
-	Gitlab access to download the research data docker images.
+	Provide a Gitlab access to download the research data docker images.
 	
 	```
-	Use research data only? (Y/n):
+	Use research data only? (Y/n): Y
 	```
 	
 	Using only the research data ("Y") should lead directly to a working MIP Local, accessing research data in a table name `mip_cde_features`. 
 	
-	Adding hospital data (i.e. answering "n") requires additional steps: see section [Adding clinical data](#adding-clinical-data). 
+	Using also hospital data (i.e. answering "n") requires additional (uncertain) steps: see section [Adding clinical data](#adding-clinical-data). 
 	
 	In this case, MIP Local will use the view named "mip\_local\_features" to access data. This view groups the research and the clinical data in a uniform flat schema. It is automatically created when hospital data, in the form of a csv file name "harmonized\_clinical\_data", is dropped in the /data/ldsm folder of the MIP Local server. (See [PostgresRAW-UI documentation](https://github.com/HBPMedical/PostgresRAW-UI/blob/master/README.md#3-automated-mip-view-creation) for details.)
 	
@@ -320,7 +333,10 @@ At the time of writing (25.01.2018), the <a href="https://github.com/HBPMedical/
 	Key is valid for? (0) 
 	
 	Is this correct? (y/N)
+	```
+	Just type "enter" to use the default values (and confirm with "y").
 	
+	```
 	You need a user ID to identify your key; the software constructs the user ID
 	from the Real Name, Comment and Email Address in this form:
 	    "Heinrich Heine (Der Dichter) <heinrichh@duesseldorf.de>"
@@ -345,17 +361,16 @@ At the time of writing (25.01.2018), the <a href="https://github.com/HBPMedical/
 	
 	```
 	
-	This information is used by git-crypt to encrypt in the Git repository the sensitive information. This precaution is taken if the configuration is uploaded (pushed) to a different server.
+	This information is used by git-crypt to encrypt in the Git repository the sensitive information. This precaution is taken if the configuration is uploaded (pushed) to a different server. The passphrase might be needed for those steps: keep it secure somewhere.
 
-
-4. Once the configuration script ends successfully with a message "Generation of the standard configuration for MIP Local complete!", commit the modifications before continuing.
+5. Once the configuration script ends successfully with a message "Generation of the standard configuration for MIP Local complete!", commit the modifications before continuing.
 	
 	```sh
 	git add .
 	git commit -m "Configuration for MIP Local"
 	```
 
-5. Run the setup script, twice if required.
+6. Run the setup script, twice if required.
 
 	```sh
 	./setup.sh
@@ -423,7 +438,7 @@ The Web Portal documentation [HBP\_SP8\_UserGuide\_latest.pdf](https://hbpmedica
 
 [This report](https://drive.google.com/file/d/136RcsLOSECm4ZoLJSORpeM3RLaUdCTVe/view) of a successful deployment can also help check that MIP Local is behaving correctly.
 
-The PostgresRAW-UI can be validated following this <a href="https://drive.google.com/open?id=0B5oCNGEe0yovNWU5eW5LYTAtbWs">test protocol</a>. PostgresRAW-UI should be accessible locally at `http://localhost:31555`.
+The PostgresRAW-UI can be validated following this <a href="https://drive.google.com/open?id=0B5oCNGEe0yovNWU5eW5LYTAtbWs">test protocol</a>. PostgresRAW-UI should be accessible locally at `http://localhost:31555`; it requires LDSM credentials to access the local data (see next section).
 
 
 
@@ -456,6 +471,20 @@ The last instructions provided to restart it are:
 ./common/scripts/fix-mesos-cluster.sh --reset
 ./setup.sh
 ```
+
+The following error might appear:
+
+```
+TASK [marathon : Install Marathon package] ***********************************************************************************************************
+fatal: [localhost]: FAILED! => {"cache_update_time": 1520419443, "cache_updated": false, "changed": false, "failed": true, "msg": "'/usr/bin/apt-get -y -o \"Dpkg::Options::=--force-confdef\" -o \"Dpkg::Options::=--force-confold\"     install 'marathon=1.5.2' -o APT::Install-Recommends=no' failed: E: Packages were downgraded and -y was used without --allow-downgrades.\n", "stderr": "E: Packages were downgraded and -y was used without --allow-downgrades.\n", "stderr_lines": ["E: Packages were downgraded and -y was used without --allow-downgrades."], "stdout": "Reading package lists...\nBuilding dependency tree...\nReading state information...\nThe following packages will be DOWNGRADED:\n  marathon\n0 upgraded, 0 newly installed, 1 downgraded, 0 to remove and 101 not upgraded.\n", "stdout_lines": ["Reading package lists...", "Building dependency tree...", "Reading state information...", "The following packages will be DOWNGRADED:", "  marathon", "0 upgraded, 0 newly installed, 1 downgraded, 0 to remove and 101 not upgraded."]}
+```
+
+It can be solved using 
+
+```
+sudo apt install -y --allow-downgrades --allow-change-held-packages marathon=1.5.2
+```
+
 
 Before an updated version of the installer can be provided, it might be necessary to:
 > stop all services, uninstall mesos, marathon and docker-ce, then run the installer again.
@@ -543,19 +572,28 @@ Please be advised this is drastic steps which will remove entirely several softw
 
 ## Troubleshooting
 
-Running several times the `setup.sh` script might solve some issues: in case of error, run it one more time to check if it fails at the same step.
+- Running several times the `setup.sh` script might solve some issues: in case of error, run it one more time to check if it fails at the same step.
 
-In case the installation fails because a package (docker-ce, marathon, zookeeper or mesos) cannot be downgraded or installed because of previous installs, use the following commands (possibly purge only one package rather than all):
+- In case the installation fails because a package (docker-ce, marathon, zookeeper or mesos) cannot be downgraded or installed because of previous installs, use the following commands (possibly purge only one package rather than all):
 
-```sh
-$ sudo apt purge -y --allow-change-held-packages docker-ce marathon zookeeper mesos
-$ sudo apt install -y --allow-downgrades --allow-change-held-packages docker-ce=17.09.0~ce-0~ubuntu
-```
+    ```sh
+    $ sudo apt purge -y --allow-change-held-packages docker-ce marathon zookeeper mesos
+    $ sudo apt install -y --allow-downgrades --allow-change-held-packages docker-ce=17.09.0~ce-0~ubuntu
+    ```
+- Purging Marathon might also fix the problem if the deployment gets stuck at:
+
+    ```
+    TASK [ldsm-database : wait for marathon] *******************************************
+    FAILED - RETRYING: wait for marathon (3600 retries left).
+    FAILED - RETRYING: wait for marathon (3599 retries left).
+    ```
+
 
 [//]: # (from Slack)
 
-> Zookeeper in an unstable state, cannot be restarted
-> 
+
+- > Zookeeper in an unstable state, cannot be restarted
+>  
 > -> ```/common/scripts/fix-mesos-cluster.sh --reset, then ./setup.sh ```
 
 

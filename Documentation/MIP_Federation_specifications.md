@@ -204,6 +204,17 @@ The swarm cannot recover if it definitively loses its manager (or quorum of mana
 
 To increase stability, the manager role can be duplicated on several nodes (including worker nodes). For more information, see Docker documentation about <a href="https://docs.docker.com/engine/swarm/join-nodes/#join-as-a-manager-node">adding a manager node</a> and <a href="https://docs.docker.com/engine/swarm/admin_guide/#add-manager-nodes-for-fault-tolerance">fault tolerance</a>.
 
+A worker node can be removed from the swarm using this command:
+``` 
+docker swarm leave```
+
+The manager must then remove that node from the known workers:
+```
+docker node ls
+docker node rm <hostname>
+```
+
+
 ## Security 
 
 This section documents a few elements regarding security.
