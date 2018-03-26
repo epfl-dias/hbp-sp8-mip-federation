@@ -6,6 +6,8 @@ This document summarises the knowledge of DIAS-EPFL regarding the deployment and
 
 See also the official documentation of the deployment scripts project on Github: <a href="https://github.com/HBPMedical/mip-microservices-infrastructure/blob/master/README.md">README</a> file, <a href="https://github.com/HBPMedical/mip-microservices-infrastructure/blob/master/docs/installation/mip-local.md">installation</a> instructions and some <a href="https://github.com/HBPMedical/mip-microservices-infrastructure/blob/master/docs">more documentation</a>.
 
+See also a [simpler deployment procedure](https://github.com/HBPMedical/mip-local) for MIP Local without the Data Factory, using Docker compose.
+
 ## Contents
 
 - [Introduction](#introduction)
@@ -55,22 +57,19 @@ Based on the <a href="https://github.com/HBPMedical/mip-microservices-infrastruc
 This file lists the building blocks that will be installed. In theory, it can be modified before running setup.sh to install only specific block (this has not been tested). 
 
 
-[//]: # (**TODO: Test building block deployment and improve documentation. Determine which blocks need to be deployed on the same server, and how to configure the blocks if they are deployed on different servers.**)
-
-
 ## Requirements
 
 - Ubuntu 16.04 system (partial support for RHEL).
 - Matlab R2016b. (Required for the Data Factory. Alternatively the MIP can be installed without the Data Factory: see below the corresponding deployment option.)
-- According to the official documentation, python version 2.7 and the library `jmespath` need to be installed beforehand.
-- For ubuntu:
-
+- Fixed IP address and possibly a DNS alias to simplify the access to the Web Portal.
+- According to the official documentation, python version 2.7 and (in some cases at least) the library `jmespath` need to be installed beforehand.
+    For ubuntu:
+    
 	```
 	sudo apt install python2.7
 	ln -s /usr/bin/python2.7 /usr/bin/python
 	sudo apt install python-jmespath
 	```
-
 
 ## Network configuration
 
@@ -79,7 +78,25 @@ This file lists the building blocks that will be installed. In theory, it can be
 
 Access to the following internet domains is required during the deployment:
 
-**TODO: Get Lille list and reproduce it here**
+- amazonaws.com
+- fr.archive.ubuntu.com
+- archive.ubuntu.com
+- security.ubuntu.com
+- launchpad.net
+- hub.docker.com
+- download.docker.com
+- docker.io
+- repos.mesosphere.com
+- pypi.python.org
+- github.com
+- bitbucket.org
+- gitlab.com
+- cloudfront.net
+- keyserver.ubuntu.com
+- services.humanbrainproject.eu
+- hbps1.chuv.ch
+
+If internet access is limited, make sure to allow connections to these domains.
 
 
 ### Operational firewall configuration
@@ -90,9 +107,8 @@ The firewall of the server where MIP is deployed must be set up and deny all inc
 - 80 for Web Portal access
 - MIP Local requirements
 - Federation requirements (see Federation documentation)
-- User management requirements (services.humanbrainproject.eu)
+- User management requirements: access to [services.humanbrainproject.eu](services.humanbrainproject.eu)
 
-**TODO: Obtain user management requirement and reproduce it here.**
 
 
 ### MIP Local requirements
@@ -104,6 +120,9 @@ Some ports must be open for intra-server connections (accept only requests comin
 - 31555 (PostgresRAW-UI)
 
 **TODO: Get list of ports to open for MIP-Local. Test configuration of firewall. Determine which ports are only needed locally.**
+
+Until the list can be completed, the most stable option is to run MIP Local with no firewall enable on the server. 
+
 
 ## User management
 
@@ -129,7 +148,7 @@ The following are known limitations of the deployment scripts, version 2.5.3.
 
 - It is currently not possible to deploy MIP Local with a firewall enabled. MIP Local cannot run either with the firewall up, unless the correct rules are configured (see [MIP Local requirements](#mip-local-requirements)). 
 
-- The deployed MIP will include research datasets (PPMI, ADNI and EDSD), but the process to include hospital data in MIP-Local is as yet unclear. **TODO: Obtain information; test; complete dedicated section below**
+- The deployed MIP will include research datasets (PPMI, ADNI and EDSD), but the process to include hospital data in MIP-Local is as yet unclear.
 
 Note: Clinical data processed and made available in the Local Data Store Mirror (LDSM) will not be visible from the Local Web Portal without further configuration, but they will be available to the Federation if the node is connected (variables included in the CDE only).
 
@@ -216,7 +235,7 @@ At the time of writing (25.01.2018), the <a href="https://github.com/HBPMedical/
 	2) Relational database
 	> 1
 	```
-	**NOTE:** Both options load the research data (ADNI, PPMI and EDSD) in a relational database. The first option will upload the data in the LDSM database using PostgresRAW, and the second in an unofficial postgres database named "research-db".
+	**WARNING:** Both options load the research data (ADNI, PPMI and EDSD) in a relational database. The first option will upload the data in the LDSM database using PostgresRAW, and the second in an unofficial postgres database named "research-db". **Choose 1 to deploy the official MIP Local and have the option to join the Federation.**
 	
 	```
 	Please enter an id for the main dataset to process, e.g. 'demo' and a 
@@ -308,7 +327,7 @@ At the time of writing (25.01.2018), the <a href="https://github.com/HBPMedical/
 	
 	Using also hospital data (i.e. answering "n") requires additional (uncertain) steps: see section [Adding clinical data](#adding-clinical-data). 
 	
-	In this case, MIP Local will use the view named "mip\_local\_features" to access data. This view groups the research and the clinical data in a uniform flat schema. It is automatically created when hospital data, in the form of a csv file name "harmonized\_clinical\_data", is dropped in the /data/ldsm folder of the MIP Local server. (See [PostgresRAW-UI documentation](https://github.com/HBPMedical/PostgresRAW-UI/blob/master/README.md#3-automated-mip-view-creation) for details.)
+	In this case, MIP Local will use the view named `mip_local_features` to access data. This view groups the research and the clinical data in a uniform flat schema. It is automatically created when hospital data, in the form of a csv file name `harmonized_clinical_data.csv`, is dropped in the `/data/ldsm` folder of the MIP Local server. (See [PostgresRAW-UI documentation](https://github.com/HBPMedical/PostgresRAW-UI/blob/master/README.md#3-automated-mip-view-creation) for details.)
 	
 	
 	```
@@ -370,7 +389,7 @@ At the time of writing (25.01.2018), the <a href="https://github.com/HBPMedical/
 	git commit -m "Configuration for MIP Local"
 	```
 
-6. Run the setup script, twice if required.
+6. Run the setup script, twice if required, or more if errors are encountered. Re-running the script might solve some problems.
 
 	```sh
 	./setup.sh
@@ -432,11 +451,11 @@ git remote add origin git@bitbucket.org:hbpmip_private/<instance-name>-infrastru
 
 ## Deployment validation
 
-If the deployment was successful, the Web Portal should be accessible on the `target server IP address` defined at the configuration step.
+If the deployment was successful, the Web Portal should be accessible on the `target server IP address` defined at the configuration step. The Marathon interface allows to check the status of the MIP Local services; it is accessible through a web browser on port 5080.
 
 The Web Portal documentation [HBP\_SP8\_UserGuide\_latest.pdf](https://hbpmedical.github.io/documentation/HBP_SP8_UserGuide_latest.pdf) can help check that the deployed MIP Local is running as expected. The Web Portal should provide similar results but not exactly the results shown in the doc.
 
-[This report](https://drive.google.com/file/d/136RcsLOSECm4ZoLJSORpeM3RLaUdCTVe/view) of a successful deployment can also help check that MIP Local is behaving correctly.
+The validation performed at the end of [this report](https://drive.google.com/file/d/136RcsLOSECm4ZoLJSORpeM3RLaUdCTVe/view) of a successful deployment is the official way to check that MIP Local is behaving correctly.
 
 The PostgresRAW-UI can be validated following this <a href="https://drive.google.com/open?id=0B5oCNGEe0yovNWU5eW5LYTAtbWs">test protocol</a>. PostgresRAW-UI should be accessible locally at `http://localhost:31555`; it requires LDSM credentials to access the local data (see next section).
 
@@ -500,28 +519,47 @@ Before an updated version of the installer can be provided, it might be necessar
 
 **TODO: Clarify procedure. How to guess which changes are needed? Revert at least the changes to `install_dir/envs/mip-local/etc/ansible/host_vars/` or to file `localhost` in particular?**
 
+If the update is performed by cleaning the current install and re-deploying, make sure to backup the clinical data, normally stored in `/data/ldsm/harmonized_clinical_data.csv`. 
+
+The list of other elements to backup is not known. **TODO: Obtain this list.**
+
 
 ## Adding clinical data
 
+Clinical data must be processed and harmonised so that the variables corresponding to the MIP CDE (common data elements) have the MIP standard name and encoding. Additional hospital-specific variables can also be added.
+
+The harmonised data must be exported to a CSV file name `harmonized_clinical_data.csv` and dropped in the `/data/ldsm` folder. PostgresRAW-UI will automatically detect the file, show it as a table in the PostgresRAW database and create the following views:
+
+- `mip_local_features`: shows the research and the clinical data in one big table for the Local Web Portal and Woken's usage.
+- `mip_federation_features`: shows only the clinical data fitting the CDE in a star schema based on the Federation software requirements.
+
+More steps are required to enable Woken and the Local Web Portal so see and use the clinical data. It seems that the main requirement is to update the `meta` database, which contains an entry holding a json field describing all the available variables. The entry must be adapted to make sure that the `mip_local_features` view is used as source, and that all the variables available in the `harmonized_clinical_data.csv` file are described in the json field.
+
+Modification to the `meta` database are not taken into account automatically. Restarting the following services from the Marathon interface (running on port 5080) might be sufficient (not tested):
+
+- Web Portal backend + frontend
+- Woken
+- Data Factory
+
+
 **TODO: This section needs to be checked, and properly documented. Only general information is available.**
 
-Draft guidelines to add clinical data:
+Draft guidelines to add clinical data the official way (not tested):
 
-[//]: # (from meeting on January 9th, 2018; untested)
+[//]: # (Ludovic, technical meeting on January 9th, 2018; untested)
 
->```sh
->- Create a clone of gitlab project https://github.com/HBPMedical/mip-cde-meta-db-setup.
->```
-> 	- Modify clm.patch.json so that it can modify the default variables.json file to add the relevant new variables.
->		- Adapt first line of Docker file to select / define the version / rename the Docker image, from hbpmip/mip-cde-meta-db-setup to something else (?)
->		- Create the docker image and push it to gitlab (?)
->		- Once the MIP-Local configuration for the deployment exist, modify (line 20 of) the file
+
+>   - Create a clone of gitlab project https://github.com/HBPMedical/mip-cde-meta-db-setup.
+>   - Modify clm.patch.json so that it can modify the default variables.json file to add the relevant new variables.
+>   - Adapt first line of Docker file to select / define the version / rename the Docker image, from hbpmip/mip-cde-meta-db-setup to something else (?)
+>   - Create the docker image and push it to gitlab (?)
+>   - Once the MIP-Local configuration for the deployment exist, modify (line 20 of) the file
 >		   envs/mip-local/etc/ansible/group_vars/reference to reference the right docker image
->		- Run setup.sh so that the new docker image is run and copies the data in the meta-db database
->		- Restart all services of the following building blocks from Marathon (if necessary, scale them down to 0, then up again to 1)
->			- web portal
->			- woken
->			- data factory
+>   - Run setup.sh so that the new docker image is run and copies the data in the meta-db database
+>   - Restart all services of the following building blocks from Marathon (if necessary, scale them down to 0, then up again to 1)
+>    - web portal
+>    - woken
+>    - data factory
 
 
 
