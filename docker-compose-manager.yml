@@ -16,7 +16,7 @@
 # DISCLAIM ANY LIABILITY OF ANY KIND FOR ANY DAMAGES WHATSOEVER RESULTING FROM THE
 # USE OF THIS SOFTWARE.
 
-version: '3'
+version: '3.2'
 
 networks:
   net-federation:
@@ -72,6 +72,9 @@ services:
           - node.role == manager # Ensures we only start on manager nodes
           - node.labels.name == ${FEDERATION_NODE}
     ports:
-      - "9090:9090"      # So that we can access the Exareme REST API / interface
+      - target: 9090     # So that we can access the Exareme REST API / interface
+        published: 9090
+        protocol: tcp
+        mode: host
     networks:
       - "net-federation" # Connect the docker container to the global network
