@@ -4,7 +4,7 @@ This document summarises the knowledge of DIAS-EPFL regarding the deployment and
 
 **Disclaimer:** The authors of this document are not in charge of the MIP development and its deployment scripts. They have limited knowledge of most of the elements that are deployed. No guaranties are offered as to the correctness of this document.
 
-See also the official documentation of the deployment scripts project on Github: <a href="https://github.com/HBPMedical/mip-microservices-infrastructure/blob/master/README.md">README</a> file, <a href="https://github.com/HBPMedical/mip-microservices-infrastructure/blob/master/docs/installation/mip-local.md">installation</a> instructions and some <a href="https://github.com/HBPMedical/mip-microservices-infrastructure/blob/master/docs">more documentation</a>.
+See also the official documentation of the deployment scripts project on Github: [README](https://github.com/HBPMedical/mip-microservices-infrastructure/blob/master/README.md) file, [installation instructions](https://github.com/HBPMedical/mip-microservices-infrastructure/blob/master/docs/installation/mip-local.md) and some [more documentation](https://github.com/HBPMedical/mip-microservices-infrastructure/blob/master/docs).
 
 See also a [simpler deployment procedure](https://github.com/HBPMedical/mip-local) for MIP Local without the Data Factory, using Docker compose.
 
@@ -12,6 +12,7 @@ See also a [simpler deployment procedure](https://github.com/HBPMedical/mip-loca
 
 - [Introduction](#introduction)
 - [Requirements](#requirements)
+- [Security warning](#security_warning)
 - [Network configuration](#network-configuration)
 - [User management](#user-management)
 - [Known limitations](#known-limitations)
@@ -41,11 +42,11 @@ It is populated with:
 - The research datasets PPMI, ADNI and EDSD.
 - Local clinical datasets, once prepared and processed.
 
-The MIP can be deployed using the scripts available in the <a href="https://github.com/HBPMedical/mip-microservices-infrastructure">mip-microservices-infrastructure</a> project on Github.
+The MIP can be deployed using the scripts available in the [mip-microservices-infrastructure](https://github.com/HBPMedical/mip-microservices-infrastructure) project on Github.
 
 The software is organised into "building blocks" that should facilitate the deployment of the MIP on two or three servers, in an infrastructure that improves security in order to guaranty data privacy.
 
-Based on the <a href="https://github.com/HBPMedical/mip-microservices-infrastructure/blob/master/roles/mip-local/templates/hosts.j2"> Ansible inventory file</a>, the building blocks are the following:
+Based on the [Ansible inventory file](https://github.com/HBPMedical/mip-microservices-infrastructure/blob/master/roles/mip-local/templates/hosts.j2), the building blocks are the following:
 
 - infrastructure
 - hospital-database
@@ -71,12 +72,23 @@ This file lists the building blocks that will be installed. In theory, it can be
 	sudo apt install python-jmespath
 	```
 
+
+## Security warning
+
+The official MIP Local documentation includes the following statement:
+> Security: it is the responsibility of the hosting party to secure access to MIP at the network level.
+
+As of 29.03.2018, a standard MIP Local deployment will expose several ports giving access to the database services (password protected) and administration tools (not password protected). Using a firewall to prevent outside access to these services is highly recommended. However, using a firewall on the server itself requires the correct configuration to not break functionalities; as of end of March 2018 the relevant configuration is not known.
+
+All information available to the DIAS-EPFL team on this subject is provided in the next section. DIAS-EPFL is not responsible for the security of the platform: please contact the development team for further questions.
+
+
 ## Network configuration
 
 
 ### Internet access for deployment
 
-Access to the following internet domains is required during the deployment:
+Access to the following internet domains is required during the deployment (the list might not be exhaustive):
 
 - amazonaws.com
 - fr.archive.ubuntu.com
@@ -113,7 +125,7 @@ The firewall of the server where MIP is deployed must be set up and deny all inc
 
 ### MIP Local requirements
 
-Some ports must be open for intra-server connections (accept only requests coming from the local server itself, but on its public address):
+Some ports must be open for intra-server connections (accept only requests coming from the local server itself, from localhost and from its public address):
 
 - 31432 ("LDSM", PostgresRAW database)
 - 31433 (Postgres "analytics-db")
@@ -121,7 +133,7 @@ Some ports must be open for intra-server connections (accept only requests comin
 
 **TODO: Get list of ports to open for MIP-Local. Test configuration of firewall. Determine which ports are only needed locally.**
 
-Until the list can be completed, the most stable option is to run MIP Local with no firewall enable on the server. 
+Until the list can be completed, the only stable option is to run MIP Local with no firewall enable on the server.
 
 
 ## User management
@@ -194,7 +206,7 @@ At the time of writing (25.01.2018), the <a href="https://github.com/HBPMedical/
 3. The versions used for each software can be found and modified in `vi vars/versions.yml`. In particular, use the latest stable versions for the LDSM:
     
     ```
-    ldsm_db_version: 'v1.4'
+    ldsm_db_version: 'v1.4.1'
     postgresraw_ui_version: 'v1.5'
     ```
     
