@@ -131,9 +131,9 @@ Some ports must be open for intra-server connections (accept only requests comin
 - 31433 (Postgres "analytics-db")
 - 31555 (PostgresRAW-UI)
 
-**TODO: Get list of ports to open for MIP-Local. Test configuration of firewall. Determine which ports are only needed locally.**
+**TODO: Get list of ports to open for MIP-Local from development team. Test configuration of firewall. Determine which ports are only needed locally.**
 
-Until the list can be completed, the only stable option is to run MIP Local with no firewall enable on the server.
+Until the list can be completed, the only stable option is to run MIP Local with no firewall enabled on the server.
 
 
 ## User management
