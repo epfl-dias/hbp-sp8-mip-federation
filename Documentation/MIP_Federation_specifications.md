@@ -7,6 +7,7 @@ Contents:
 - [Overview of the Federation](#overview-of-the-federation)
 - [MIP Federated requirements](#mip-federated-requirements)
 - [MIP Federated deployment](#mip-federated-deployment)
+- [Troubleshooting](#troubleshooting)
 - [Behaviour in case of failure](#behaviour-in-case-of-failure)
 - [Security](#security)
 
@@ -44,7 +45,7 @@ The software Exareme will expose federated analysis functionalities to the Feder
 
 ### Regarding Docker swarm
 
-As written in the official documentation, "Docker includes a _swarm mode_ for natively managing a cluster of Docker Engines called a _swarm_". The Docker swarm functionality creates a link among distant Docker engines. A Docker engine can only be part of one swarm, so all the Docker Engine instances running on the Federation servers will be part of the Federation Swarm. (In other words, the Federation servers cannot be part of another swarm, assuming the normal and recommanded setup where only one Docker engine runs on each server.)
+As written in the official documentation, "Docker includes a _swarm mode_ for natively managing a cluster of Docker Engines called a _swarm_". The Docker swarm functionality creates a link among distant Docker engines. A Docker engine can only be part of one swarm, so all the Docker Engine instances running on the Federation servers will be part of the Federation Swarm. (In other words, the Federation servers cannot be part of another swarm, assuming the normal and recommended setup where only one Docker engine runs on each server.)
 
 The swarm is created by the Swarm Manager; other Federation nodes will join as Swarm Workers. The Federation Swarm Manager will create a `mip-federation` network shared by the swarm nodes. All communications on this network will be encrypted using the option `--opt encrypted`.
 
@@ -96,13 +97,13 @@ The node must also host a deployed MIP Local, or at least an LDSM instance. The 
 
 ### Initial setup
 
-This document does not cover the deployment of MIP Local at the Federation nodes (this is documented [here](https://github.com/HBPMedical/mip-federation/blob/master/Documentation/MIP_Local_deployment.md)). It does not include either the deployment and configuration of the Federation Web Portal, for which no information is available yet (12.2017).
+This document does not cover the deployment of MIP Local at each node (this is documented [here](https://github.com/HBPMedical/mip-federation/blob/master/Documentation/MIP_Local_deployment.md)). It does not include either the deployment and configuration of the Federation Web Portal, for which no information is available yet (28.03.2018).
 
 In summary, the initial setup expected is the following:
 
 - On the Federation Manager server, Docker engine must be installed and the LDSM deployed, either alone or as part of the MIP Local (PostgresRaw and PostgresRaw-UI containers configured to expose their services on the port 31432 and 31555 respectively).
 
-- On the other Federation nodes, MIP Local must be deployed including the LDSM, again with PostgresRaw and PostgresRaw-UI containers configured to expose their services on the port 31432 and 31555 respectively.
+- On the other Federation nodes, MIP Local must be deployed including the LDSM, with PostgresRaw and PostgresRaw-UI containers configured to expose their services on the port 31432 and 31555 respectively.
 
 - The network access is configured at each node according to the requirements.
 
@@ -110,7 +111,7 @@ In summary, the initial setup expected is the following:
 
 ### Deployment of the Federation Manager node
 
-Based on the last version of the Federation infrastructure schema provided, the Federation Manager node will be a server independant from any particular hospital. Alternatively, any hospital node hosting an instance of MIP Local could be the Federation manager.
+In the MIP Federation setup, the Federation Manager node is a server independent from any particular hospital. Alternatively, any hospital node hosting an instance of MIP Local could be the Federation manager.
 
 In both cases, the Federation Manager server must host a deployed LDSM instance exposing the research data as part of its Federation view.
 
@@ -124,7 +125,7 @@ Once the Swarm is created, the Exareme master will be run on the swarm. The Fede
 
 #### Deployment steps
 
-- Create the swarm by running the setupFederationInfrastructure.sh script.
+- Create the swarm by running the `setupFederationInfrastructure.sh` script (use `sudo` if docker rights are not available).
   
    ```
    git clone https://github.com/HBPMedical/mip-federation.git
@@ -134,23 +135,58 @@ Once the Swarm is created, the Exareme master will be run on the swarm. The Fede
 
 ![Image](Federation_schema.003.jpg)
 
+- If the future Federation nodes have the usual MIP Local settings, create a file `settings.local.sh` with the following content:
+
+    ```
+    : ${EXAREME_VERSION:="v8"}
+    : ${DB_PORT:="31432"}
+    : ${DB_NAME2:="ldsm"}
+    : ${DB_USER2:="ldsm"}
+    ```
+- Tag the manager node with an informative label, using Portainer or the following commands:
+
+   ```sh
+   $ sudo docker node update --label-add name=<node_alias> <node hostname>
+   ```
+   * `<node hostname>` can be found with `docker node ls`
+   * `<node_alias>` will be used when bringing up the services and should be a short descriptive name.
+
+- Create a file named `settings.local.<node_alias>.sh `, which contains the password for the `ldsm` user to connect to the database on the manager node:
+
+    ```
+    : ${LDSM_PASSWORD:="<ldsm_user_password_for_db_at_node>"}
+    ```
+
+- Start Exareme on the manager node:
+
+   ```sh
+   ./start.sh <node_alias>
+   ```
+    Exareme test page will be accessible on `http://localhost:9090/`.
+
+- Optionally, the web interface Portainer can be deployed to manage the swarm and the services running on it:
+
+    ```
+    ./portainer.sh
+    ```
+    Portainer will be accessible on `http://localhost:9000/` by default.
 
 
 ### Deployment of other MIP nodes
 
-MIP Local will function as previously: the docker containers will be run locally, and can be deployed with the MIP Local deployment scripts (assuming that everything runs on the same server or that the deployment scripts are adapted to deploy individual building blocks).
+An official version of MIP Local must be deployed normally.
 
 The only supplementary deployment step to perform at the node is to join the swarm, using the token provided by the swarm manager.
 
 #### Deployment steps
 
-- If needed, retrieve the token on the Federation manager server with the following command:
+- On the Federation manager server, retrieve the join token with the following command:
 
 	```
 	$ sudo docker swarm join-token worker
 	```
 
-- On the node, use the command retrieved at the previous step to join the Federation swarm, which looks like:
+- On the node, use the command retrieved at the previous step to join the Federation swarm. The command looks like the following:
 
 	```
 	$ docker swarm join --token <Swarm Token> <Master Node URL>
@@ -162,21 +198,34 @@ The only supplementary deployment step to perform at the node is to join the swa
 
 ### Deployment of Exareme and creation of the Federation
 
-Once the worker nodes have joined the swarm, the swarm manager must tag each of them with a representative name (e.g. hospital name) and launch an Exareme worker on each of them. The Exareme worker will access the local LDSM to perform the queries requested by the Exarme master.
+Once the worker nodes have joined the swarm, they are visible from the manager of the Federation, through Portainer under the "Swarm" tab or running:
 
+```
+docker node ls
+```
 
-- On the Federation manager server, tag the new node(s) with an informative label:
+The swarm manager must tag each node with a representative name (e.g. hospital name) and launch an Exareme worker on each of them. The Exareme worker will access the local LDSM to perform the queries requested by the Exareme master.
+
+#### Deployment steps
+
+- On the Federation manager server, tag the new node(s) with an informative label, using Portainer or the following commands:
 
    ```sh
-   $ sudo docker node update --label-add name=<Alias> <node hostname>
+   $ sudo docker node update --label-add name=<node_alias> <node hostname>
    ```
    * `<node hostname>` can be found with `docker node ls`
-   * `<Alias>` will be used when bringing up the services and should be a short descriptive name.
-   
-- Restart Exareme taking into account the new node:
+   * `<node_alias>` will be used when bringing up the services and should be a short descriptive name.
+
+- For each node, create a file named `settings.local.<node_alias>.sh `, which contains the password for the `ldsm` user to connect to the database on that specific node:
+
+    ```
+    : ${LDSM_PASSWORD:="<ldsm_user_password_for_db_at_node>"}
+    ```
+
+- Start Exareme on the new node:
 
    ```sh
-   $ sudo ./start.sh <Alias>
+   ./start.sh <node_alias>
    ```
 
 ![Image](Federation_schema.005.jpg)
@@ -185,30 +234,80 @@ Once the worker nodes have joined the swarm, the swarm manager must tag each of 
 
 ### Deployment and configuration of the Federation Web Portal
 
-To be defined.
+To be defined once the Federation Web Portal is available. (As of 29.03.2018, no version integrating Exareme's functionalities is available).
 
 ![Image](Federation_schema.006.jpg)
 
 
+## Troubleshooting
+
+### Network configuration
+
+Obtaining the correct network configuration for each server that must join the Federation might not be straightforward.
+
+#### TCP and UDP ports
+
+The netcat utility can help to check the connections from one Federation server to another (and in particular from the Federation manager):
+
+- Testing that the UDP ports are open:    ```nc -z -v -u <host> <port>```
+- Testing that the TCP ports are open: ```nc -z -v -t <host> <port>```
+
+**Note:** netcat is not installed by default on RHEL; it can be done with the command `sudo yum install nc`. The -z option is not available on RHEL: simply run the commands above without it.
+
+**Note 2:** Alternatively, tcp ports opening can be checked with this command (change tcp for udp to check udp ports):
+
+```
+</dev/tcp/<host>/<port> && echo Port is open || echo Port is closed
+```
+
+#### IP protocol 50
+
+If the firewall configuration for tcp and udp ports is correct, but IP protocol 50 is not enabled at a node, it will be possible to start the Exareme master and workers, but they will not be able to communicate among themselves. (This is because the IP protocol 50 is used by the secured overlay network used for communication among Exareme instances.)
+
+
+### Check that all workers are seen by Exareme
+
+Connect to the Exareme test page at `http://localhost:9090/`. The algorithm WP\_LIST\_DATASETS should show the datasets available at each node of the Federation.
+
+If a node dataset is missing:
+
+- Check the network configuration for this node.
+- Check that the parameters to access the node's database are correctly set.
+- Make sure the worker node has joined the swarm and that it is tagged with a proper name.
+- Try to stop and restart Exareme on all nodes (see below).
+- If this does not solve the problem, check the logs and report the problem.
+
+### Exareme failure
+
+Simply restart all Exareme instances from the manager node:
+
+```
+./stop.sh all
+./start.sh all
+```
+
 ## Behaviour in case of failure
 
-The Swarm functionality of Docker is meant to orchestrate tasks in an unstable: "Swarm is resilient to failures and the swarm can recover from any number of temporary node failures (machine reboots or crash with restart) or other transient errors."
+The Swarm functionality of Docker is meant to orchestrate tasks in an unstable environment: "Swarm is resilient to failures and the swarm can recover from any number of temporary node failures (machine reboots or crash with restart) or other transient errors."
 
-If a node crashes or reboots for any reason, docker should re-join the swarm automatically when restarted (to be confirmed). The manager will then restart the missing services on the swarm and thus restore the previous status as soon as possible.
+If a node crashes or reboots for any reason, docker should re-join the swarm automatically when restarted. The manager will then restart the missing services on the swarm and try and restore the previous status as soon as possible.
 
-On the other hand, Exareme will not work properly if all the expected worker nodes are not available, or if their IP addresses are modified. In case of prolonged unavailability or failure of one worker node, it should be restarted to adapt to the new situation. 
+On the other hand, Exareme will not work properly if all the expected worker nodes are not available, or if their IP addresses on the overlay network are modified (which is usually the case when a worker restarts). In case of prolonged unavailability or failure of one worker node, Exareme should be restarted to adapt to the new status.
 
-**TODO: Check planned upgrades of Exareme for more flexibility regarding failures.**
+**Further developments of Exareme are under way, this status (corresponding to version v8) should evolve in the near future.**
 
 The swarm cannot recover if it definitively loses its manager (or quorum of manager) because of "data corruption or hardware failures". In this case, the only option will be to remove the previous swarm and build a new one, meaning that each node will have to perform a "join" command again.
 
-To increase stability, the manager role can be duplicated on several nodes (including worker nodes). For more information, see Docker documentation about <a href="https://docs.docker.com/engine/swarm/join-nodes/#join-as-a-manager-node">adding a manager node</a> and <a href="https://docs.docker.com/engine/swarm/admin_guide/#add-manager-nodes-for-fault-tolerance">fault tolerance</a>.
+To increase stability, the manager role can be duplicated on several nodes (including worker nodes). For more information, see Docker documentation about [adding a manager node](https://docs.docker.com/engine/swarm/join-nodes/#join-as-a-manager-node") and [fault tolerance](https://docs.docker.com/engine/swarm/admin_guide/#add-manager-nodes-for-fault-tolerance").
 
-A worker node can be removed from the swarm using this command:
+A worker node can leave the swarm using this command:
+
 ``` 
-docker swarm leave```
+docker swarm leave
+```
 
 The manager must then remove that node from the known workers:
+
 ```
 docker node ls
 docker node rm <hostname>

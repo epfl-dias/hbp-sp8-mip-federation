@@ -177,7 +177,7 @@ At the time of writing (25.01.2018), the <a href="https://github.com/HBPMedical/
 	This will clone the version 2.5.3; replace "2.5.3" by another tag or the "stable" branch as needed.
 	This command will also name the remote repository mmsi.
 	
-	You might want to create a local branch named master, in order to upload the configuration later (optionnal):
+	You might want to create a local branch named master, in order to upload the configuration later (optional):
 	
 	```
 	git checkout -b master
