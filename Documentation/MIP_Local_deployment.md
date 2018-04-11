@@ -12,7 +12,7 @@ See also a [simpler deployment procedure](https://github.com/HBPMedical/mip-loca
 
 - [Introduction](#introduction)
 - [Requirements](#requirements)
-- [Security warning](#security_warning)
+- [Security warning](#security-warning)
 - [Network configuration](#network-configuration)
 - [User management](#user-management)
 - [Known limitations](#known-limitations)
@@ -28,7 +28,7 @@ See also a [simpler deployment procedure](https://github.com/HBPMedical/mip-loca
 ## Introduction
 
 The MIP (Medical Informatics Platform) is a bundle of software developed by the HBP sub-project SP8.
-Its goal is to enable research and studies on neurological medical data, locally at one hospital and in a Federated manner across hospitals, while maintaining the privacy of sensitive data. For more information, please refer to "SP8 Medical Informatics Platform – Architecture and Deployment Plan" (filename `SGA1_D8.6.1_FINAL_Resubmission`).
+Its goal is to enable research and studies on neurological medical data, locally at one hospital and in a federated manner across hospitals, while maintaining the privacy of sensitive data. For more information, please refer to "SP8 Medical Informatics Platform – Architecture and Deployment Plan" (filename `SGA1_D8.6.1_FINAL_Resubmission`).
 
 The MIP is composed of four main parts:
 
@@ -55,7 +55,7 @@ Based on the [Ansible inventory file](https://github.com/HBPMedical/mip-microser
 - algorithm-factory
 - web-analytics
 
-This file lists the building blocks that will be installed. In theory, it can be modified before running setup.sh to install only specific block (this has not been tested). 
+This file lists the building blocks that will be installed. In theory, it can be modified before running `./setup.sh` to install only specific block (this has not been tested).
 
 
 ## Requirements
@@ -65,8 +65,8 @@ This file lists the building blocks that will be installed. In theory, it can be
 - Fixed IP address and possibly a DNS alias to simplify the access to the Web Portal.
 - According to the official documentation, python version 2.7 and (in some cases at least) the library `jmespath` need to be installed beforehand.
     For ubuntu:
-    
-	```
+
+	```sh
 	sudo apt install python2.7
 	ln -s /usr/bin/python2.7 /usr/bin/python
 	sudo apt install python-jmespath
@@ -113,7 +113,7 @@ If internet access is limited, make sure to allow connections to these domains.
 
 ### Operational firewall configuration
 
-The firewall of the server where MIP is deployed must be set up and deny all incoming connections, except on the following ports:
+The firewall in front of the MIP server must be set up and deny all incoming connections, except on the following ports:
 
 - 22 for ssh access
 - 80 for Web Portal access
@@ -131,9 +131,13 @@ Some ports must be open for intra-server connections (accept only requests comin
 - 31433 (Postgres "analytics-db")
 - 31555 (PostgresRAW-UI)
 
-**TODO: Get list of ports to open for MIP-Local from development team. Test configuration of firewall. Determine which ports are only needed locally.**
+**TODO:**
 
-Until the list can be completed, the only stable option is to run MIP Local with no firewall enabled on the server.
+- Get list of ports to open for MIP-Local from development team.
+- Test configuration of firewall.
+- Determine which ports are only needed locally.
+
+Until the list can be completed, the only stable option is to run MIP Local with **no firewall enabled on the server**.
 
 
 ## User management
