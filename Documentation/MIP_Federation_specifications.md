@@ -1,7 +1,5 @@
 # MIP Federation specifications
 
-**Warning:** This document is work in progress. The on-going work might lead to improvement to the Federation specifications.
-
 Contents:
 
 - [Overview of the Federation](#overview-of-the-federation)
@@ -59,36 +57,34 @@ Docker containers can be run in two ways:
 
 A Federation server is planned in the CHUV infrastructure, along with the hospital's MIP node server.
 
-The Federation server should host the (first) Federation Manager node, as well as the Federation Web Portal providing the MIP federated functionalities.
-
+The Federation server host the first Federation Manager node, as well as the Federation Web Portal providing the MIP federated functionalities.
 
 
 ## MIP Federated requirements
-
 
 ### Federation manager server requirements
 
 - Static IP
 - Network configuration:
-	- TCP: ports 2377 and 7946 must be open and available
-	- UDP: ports 4789 and 7946 must be open and available
-	- IP protocol 50 (ESP) must be enabled
+  * TCP: ports 2377 and 7946 must be open and available
+  * UDP: ports 4789 and 7946 must be open and available
+  * IP protocol 50 (ESP) must be enabled
 
 - If the configuration uses a whitelist of allowed IP addresses, the IP of all other Federation nodes must be authorised.
 
 The Federation manager server must run an instance of the LDSM as deployed in the MIP, exposing a valid federation view. The LDSM instance must be accessible locally through PostgresRAW-UI on port 31555.
 
 - If the Federation Manager server is a hospital node, it will run a normal MIP Local instance.
-- If the Federation Manager server is not a hospital node, it only needs to run an instance of the LDSM containing the research dataset that must be exposed at the Federation level.
+- If the Federation Manager server is not a hospital node, it only needs to run an instance of the LDSM containing the research datasets which are exposed to the Federation.
 
 
 ### Federation nodes requirements
 
 - Static IP
 - Network configuration:
-	- TCP: port 7946 must be open and available
-	- UDP: ports 4789 and 7946 must be open and available
-	- IP protocol 50 (ESP) must be enabled
+  * TCP: port 7946 must be open and available
+  * UDP: ports 4789 and 7946 must be open and available
+  * IP protocol 50 (ESP) must be enabled
 
 The node must also host a deployed MIP Local, or at least an LDSM instance. The LDSM instance must be accessible locally through PostgresRAW-UI on port 31555.
 
@@ -97,7 +93,7 @@ The node must also host a deployed MIP Local, or at least an LDSM instance. The 
 
 ### Initial setup
 
-This document does not cover the deployment of MIP Local at each node (this is documented [here](https://github.com/HBPMedical/mip-federation/blob/master/Documentation/MIP_Local_deployment.md)). It does not include either the deployment and configuration of the Federation Web Portal, for which no information is available yet (28.03.2018).
+This document does not cover the deployment of MIP Local at each node (this is documented [separatly in details](https://github.com/HBPMedical/mip-federation/blob/master/Documentation/MIP_Local_deployment.md)). It does not include either the deployment and configuration of the Federation Web Portal, for which no information is available yet (28.03.2018).
 
 In summary, the initial setup expected is the following:
 
@@ -138,7 +134,6 @@ Once the Swarm is created, the Exareme master will be run on the swarm. The Fede
 - If the future Federation nodes have the usual MIP Local settings, create a file `settings.local.sh` with the following content:
 
     ```
-    : ${EXAREME_VERSION:="v8"}
     : ${DB_PORT:="31432"}
     : ${DB_NAME2:="ldsm"}
     : ${DB_USER2:="ldsm"}
@@ -146,7 +141,7 @@ Once the Swarm is created, the Exareme master will be run on the swarm. The Fede
 - Tag the manager node with an informative label, using Portainer or the following commands:
 
    ```sh
-   $ sudo docker node update --label-add name=<node_alias> <node hostname>
+   sudo docker node update --label-add name=<node_alias> <node hostname>
    ```
    * `<node hostname>` can be found with `docker node ls`
    * `<node_alias>` will be used when bringing up the services and should be a short descriptive name.
@@ -162,7 +157,7 @@ Once the Swarm is created, the Exareme master will be run on the swarm. The Fede
    ```sh
    ./start.sh <node_alias>
    ```
-    Exareme test page will be accessible on `http://localhost:9090/`.
+   The Exareme test page will be accessible on `http://localhost:9090/exa-view/index.html`.
 
 - Optionally, the web interface Portainer can be deployed to manage the swarm and the services running on it:
 
@@ -183,13 +178,13 @@ The only supplementary deployment step to perform at the node is to join the swa
 - On the Federation manager server, retrieve the join token with the following command:
 
 	```
-	$ sudo docker swarm join-token worker
+	sudo docker swarm join-token worker
 	```
 
 - On the node, use the command retrieved at the previous step to join the Federation swarm. The command looks like the following:
 
 	```
-	$ docker swarm join --token <Swarm Token> <Master Node URL>
+	docker swarm join --token <Swarm Token> <Master Node URL>
 	```
 
 
@@ -211,7 +206,7 @@ The swarm manager must tag each node with a representative name (e.g. hospital n
 - On the Federation manager server, tag the new node(s) with an informative label, using Portainer or the following commands:
 
    ```sh
-   $ sudo docker node update --label-add name=<node_alias> <node hostname>
+   sudo docker node update --label-add name=<node_alias> <node hostname>
    ```
    * `<node hostname>` can be found with `docker node ls`
    * `<node_alias>` will be used when bringing up the services and should be a short descriptive name.
@@ -249,25 +244,33 @@ Obtaining the correct network configuration for each server that must join the F
 
 The netcat utility can help to check the connections from one Federation server to another (and in particular from the Federation manager):
 
-- Testing that the UDP ports are open:    ```nc -z -v -u <host> <port>```
-- Testing that the TCP ports are open: ```nc -z -v -t <host> <port>```
+- Testing that the UDP ports are open: ```nc -z -v -w1 -u <host> <port>```
+- Testing that the TCP ports are open: ```nc -z -v -w1 -t <host> <port>```
+
+As an example, here is for all the ports needed by the platform:
+
+```sh
+nc -z -v -w1 -t <host> 7946 # if <host> is a worker node
+nc -z -v -w1 -t <host> 2377 7946 # if <host> is a manager node
+nc -z -v -w1 -u <host> 4789 7946 # for all nodes
+```
 
 **Note:** netcat is not installed by default on RHEL; it can be done with the command `sudo yum install nc`. The -z option is not available on RHEL: simply run the commands above without it.
 
-**Note 2:** Alternatively, tcp ports opening can be checked with this command (change tcp for udp to check udp ports):
+**Note 2:** Alternatively, if you are using `bash` as your command line shell and it was build with the support for it; tcp ports opening can be checked with this command (change tcp for udp to check udp ports):
 
 ```
-</dev/tcp/<host>/<port> && echo Port is open || echo Port is closed
+</dev/tcp/<host>/<port> && echo "Port is open and docker is running" || echo "Port is closed and/or docker is not running"
 ```
 
 #### IP protocol 50
 
-If the firewall configuration for tcp and udp ports is correct, but IP protocol 50 is not enabled at a node, it will be possible to start the Exareme master and workers, but they will not be able to communicate among themselves. (This is because the IP protocol 50 is used by the secured overlay network used for communication among Exareme instances.)
+If the firewall configuration for tcp and udp ports is correct, but IP protocol 50 (ESP) is not enabled at a node, it will be possible to start the Exareme master and workers, but they will not be able to communicate among themselves. This is because the protocol 50 is used when securing overlay networks over the swarm.
 
 
 ### Check that all workers are seen by Exareme
 
-Connect to the Exareme test page at `http://localhost:9090/`. The algorithm WP\_LIST\_DATASETS should show the datasets available at each node of the Federation.
+Connect to the Exareme test page at `http://localhost:9090/exa-view/index.html`. The algorithm WP\_LIST\_DATASETS should show the datasets available at each node of the Federation.
 
 If a node dataset is missing:
 
@@ -290,19 +293,19 @@ Simply restart all Exareme instances from the manager node:
 
 The Swarm functionality of Docker is meant to orchestrate tasks in an unstable environment: "Swarm is resilient to failures and the swarm can recover from any number of temporary node failures (machine reboots or crash with restart) or other transient errors."
 
-If a node crashes or reboots for any reason, docker should re-join the swarm automatically when restarted. The manager will then restart the missing services on the swarm and try and restore the previous status as soon as possible.
+If a node crashes or reboots for any reason, docker will re-join the swarm automatically when restarted. The manager will then restart the missing services on the swarm and try and restore the previous status as soon as possible.
 
-On the other hand, Exareme will not work properly if all the expected worker nodes are not available, or if their IP addresses on the overlay network are modified (which is usually the case when a worker restarts). In case of prolonged unavailability or failure of one worker node, Exareme should be restarted to adapt to the new status.
+Currently, Exareme will not work properly if all the expected worker nodes are not available, or if their IP addresses on the overlay network are modified (which is usually the case when a worker restarts). In case of prolonged unavailability or failure of one worker node, Exareme should be restarted to adapt to the new status.
 
 **Further developments of Exareme are under way, this status (corresponding to version v8) should evolve in the near future.**
 
-The swarm cannot recover if it definitively loses its manager (or quorum of manager) because of "data corruption or hardware failures". In this case, the only option will be to remove the previous swarm and build a new one, meaning that each node will have to perform a "join" command again.
+The swarm cannot recover if it definitively loses its manager (or quorum of manager) because of "data corruption or hardware failures". In this case, the only option will be to remove the previous swarm and build a new one, meaning that each node will have to perform a "join" command again, unless the docker swarm folders where properly (backed up)[#back-up-the-swarm].
 
 To increase stability, the manager role can be duplicated on several nodes (including worker nodes). For more information, see Docker documentation about [adding a manager node](https://docs.docker.com/engine/swarm/join-nodes/#join-as-a-manager-node") and [fault tolerance](https://docs.docker.com/engine/swarm/admin_guide/#add-manager-nodes-for-fault-tolerance").
 
 A worker node can leave the swarm using this command:
 
-``` 
+```
 docker swarm leave
 ```
 
@@ -314,7 +317,7 @@ docker node rm <hostname>
 ```
 
 
-## Security 
+## Security
 
 This section documents a few elements regarding security.
 
