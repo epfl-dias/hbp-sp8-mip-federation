@@ -299,7 +299,7 @@ Currently, Exareme will not work properly if all the expected worker nodes are n
 
 **Further developments of Exareme are under way, this status (corresponding to version v8) should evolve in the near future.**
 
-The swarm cannot recover if it definitively loses its manager (or quorum of manager) because of "data corruption or hardware failures". In this case, the only option will be to remove the previous swarm and build a new one, meaning that each node will have to perform a "join" command again, unless the docker swarm folders where properly (backed up)[#back-up-the-swarm].
+The swarm cannot recover if it definitively loses its manager (or quorum of manager) because of "data corruption or hardware failures". In this case, the only option will be to remove the previous swarm and build a new one, meaning that each node will have to perform a "join" command again, unless the docker swarm folders where properly [backed up](#back-up-the-swarm).
 
 To increase stability, the manager role can be duplicated on several nodes (including worker nodes). For more information, see Docker documentation about [adding a manager node](https://docs.docker.com/engine/swarm/join-nodes/#join-as-a-manager-node") and [fault tolerance](https://docs.docker.com/engine/swarm/admin_guide/#add-manager-nodes-for-fault-tolerance").
 
