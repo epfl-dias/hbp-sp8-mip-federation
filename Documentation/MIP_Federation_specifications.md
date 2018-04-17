@@ -187,6 +187,14 @@ The only supplementary deployment step to perform at the node is to join the swa
 	docker swarm join --token <Swarm Token> <Master Node URL>
 	```
 
+	Optionnaly, if the worker node is behind a NAT server, you can specify the `Public IP` to use to contact that worker node from the manager as well the other nodes with:
+	
+	```
+	docker swarm join --advertise-addr <Public IP> --token <Swarm Token> <Master Node URL>
+	```
+
+	For more options, please refer to the documentation of Docker Swarm.
+	
 
 ![Image](Federation_schema.004.jpg)
 
