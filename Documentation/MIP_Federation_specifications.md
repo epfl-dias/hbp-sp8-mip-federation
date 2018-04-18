@@ -64,7 +64,7 @@ The Federation server host the first Federation Manager node, as well as the Fed
 
 ### Federation manager server requirements
 
-- Static IP
+- Static public IP
 - Network configuration:
   * TCP: ports 2377 and 7946 must be open and available
   * UDP: ports 4789 and 7946 must be open and available
@@ -80,7 +80,7 @@ The Federation manager server must run an instance of the LDSM as deployed in th
 
 ### Federation nodes requirements
 
-- Static IP
+- Static public IP
 - Network configuration:
   * TCP: port 7946 must be open and available
   * UDP: ports 4789 and 7946 must be open and available
@@ -91,11 +91,13 @@ The node must also host a deployed MIP Local, or at least an LDSM instance. The 
 
 ## MIP Federated deployment
 
+This section describes the deployment of MIP Federated in its form at the end March 2018. Details and more configuration options are found in the mip-federation project [README.md](https://github.com/HBPMedical/mip-federation/blob/master/README.md) file.
+
 ### Initial setup
 
-This document does not cover the deployment of MIP Local at each node (this is documented [separatly in details](https://github.com/HBPMedical/mip-federation/blob/master/Documentation/MIP_Local_deployment.md)). It does not include either the deployment and configuration of the Federation Web Portal, for which no information is available yet (28.03.2018).
+This document does not cover the deployment of MIP Local at each node (this is documented [in detail here](https://github.com/HBPMedical/mip-federation/blob/master/Documentation/MIP_Local_deployment.md)). It does not include either the deployment and configuration of the Federation Web Portal, for which no information is available yet (28.03.2018).
 
-In summary, the initial setup expected is the following:
+In summary, the expected initial setup is the following:
 
 - On the Federation Manager server, Docker engine must be installed and the LDSM deployed, either alone or as part of the MIP Local (PostgresRaw and PostgresRaw-UI containers configured to expose their services on the port 31432 and 31555 respectively).
 
@@ -134,11 +136,12 @@ Once the Swarm is created, the Exareme master will be run on the swarm. The Fede
 - If the future Federation nodes have the usual MIP Local settings, create a file `settings.local.sh` with the following content:
 
     ```
+    : ${EXAREME_VERSION:="<chosen_version>"}
     : ${DB_PORT:="31432"}
     : ${DB_NAME2:="ldsm"}
     : ${DB_USER2:="ldsm"}
     ```
-- Tag the manager node with an informative label, using Portainer or the following commands:
+- Tag the manager node with an informative label, using Portainer or the following command:
 
    ```sh
    sudo docker node update --label-add name=<node_alias> <node hostname>
@@ -187,7 +190,7 @@ The only supplementary deployment step to perform at the node is to join the swa
 	docker swarm join --token <Swarm Token> <Master Node URL>
 	```
 
-	Optionnaly, if the worker node is behind a NAT server, you can specify the `Public IP` to use to contact that worker node from the manager as well the other nodes with:
+	If the worker node is behind a NAT server, you must specify the `Public IP` to use to contact that worker node from other nodes with:
 	
 	```
 	docker swarm join --advertise-addr <Public IP> --token <Swarm Token> <Master Node URL>
@@ -244,6 +247,12 @@ To be defined once the Federation Web Portal is available. (As of 29.03.2018, no
 
 ## Troubleshooting
 
+
+### Requirements and initial setup
+
+In case of problems, check first that the [requirements](#requirements) are met, that the [initial setup](#initial_setup) is correct and that the [deployment steps](#deployment_of_the_federation_manager_node) were carefully followed.
+
+
 ### Network configuration
 
 Obtaining the correct network configuration for each server that must join the Federation might not be straightforward.
@@ -273,8 +282,52 @@ nc -z -v -w1 -u <host> 4789 7946 # for all nodes
 
 #### IP protocol 50
 
-If the firewall configuration for tcp and udp ports is correct, but IP protocol 50 (ESP) is not enabled at a node, it will be possible to start the Exareme master and workers, but they will not be able to communicate among themselves. This is because the protocol 50 is used when securing overlay networks over the swarm.
+If the firewall configuration for tcp and udp ports is correct, but IP protocol 50 (ESP) is not enabled at a node, it will be possible to start the Exareme master and workers, but they will not be able to communicate among themselves. This is because the protocol 50 is used when securing overlay networks over the swarm, which is used for communications among Exareme instances.
 
+
+#### Local IP is not public
+
+The most stable and tested configuration is servers having a static public IP. If a node is behind a NAT, its local IP will be advertised by default and other nodes will not be able to contact it. See [Deployment of other MIP nodes](#deployment_of_other_mip_nodes) for the correct configuration.
+
+**Note:** Non-static public IP should be fine for worker nodes, but this has not been tested.
+
+#### iptables interferences
+
+As Docker documentation states:
+> On Linux, Docker manipulates iptables rules to provide network isolation. This is an implementation detail, and you should not modify the rules Docker inserts into your iptables policies.
+
+In case of network configuration issues, make sure that the IP tables rules were not modified manually or through scripts. This can interfere with Docker configuration or even prevent Docker to define the needed configuration.
+
+#### IP Masquerade
+
+If this is not the case by default, IP Masquerade must be enabled. When running `firewalld` on a federation server, it can be enabled with the following commands:
+
+```
+firewall-cmd --zone=public --permanent --add-masquerade
+firewall-cmd --reload
+```
+
+#### Exareme worker cannot access the local database
+
+If for unknown reasons an Exareme worker on a node cannot access the LDSM database on this node, despite the fact that it is correctly exposed on port 31432 of the localhost, an alternative configuration can be used.
+
+The Exareme worker can be configured to access the LDSM directly at its container IP address, on the local port, with this configuration in the `settings.local.<node_alias>.sh` file:
+
+```
+: ${LDSM_HOST:="<container_IP>"}
+: ${LDSM_PORT:="5432"}
+```
+
+This requires the firewall to be adapted to allow access to the `container_IP`. For firewalld, the following configuration in `/etc/firewalld/services/docker-to-docker.xml` implements this:
+
+```
+<rule family="ipv4">
+	<destination address="172.19.0.0/16"/>
+	<accept/>
+</rule>
+```
+
+Check [this post](https://github.com/moby/moby/issues/16137#issuecomment-271615192) for a possible alternative.
 
 ### Check that all workers are seen by Exareme
 
@@ -307,7 +360,7 @@ Currently, Exareme will not work properly if all the expected worker nodes are n
 
 **Further developments of Exareme are under way, this status (corresponding to version v8) should evolve in the near future.**
 
-The swarm cannot recover if it definitively loses its manager (or quorum of manager) because of "data corruption or hardware failures". In this case, the only option will be to remove the previous swarm and build a new one, meaning that each node will have to perform a "join" command again, unless the docker swarm folders where properly [backed up](#back-up-the-swarm).
+The swarm cannot recover if it definitively loses its manager (or quorum of manager) because of "data corruption or hardware failures". In this case, the only option will be to remove the previous swarm and build a new one, meaning that each node will have to perform a "join" command again, unless the docker swarm folders were properly [backed up](#back-up-the-swarm).
 
 To increase stability, the manager role can be duplicated on several nodes (including worker nodes). For more information, see Docker documentation about [adding a manager node](https://docs.docker.com/engine/swarm/join-nodes/#join-as-a-manager-node") and [fault tolerance](https://docs.docker.com/engine/swarm/admin_guide/#add-manager-nodes-for-fault-tolerance").
 
@@ -338,4 +391,4 @@ Furthermore, the tokens can be changed (without impacting the nodes already in t
 
 ### Back up the Swarm
 
-See documentation <a href="https://docs.docker.com/engine/swarm/admin_guide/#back-up-the-swarm">here</a>.
+See the official documentation <a href="https://docs.docker.com/engine/swarm/admin_guide/#back-up-the-swarm">here</a>.

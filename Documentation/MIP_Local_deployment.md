@@ -602,7 +602,7 @@ Please be advised this is drastic steps which will remove entirely several softw
 	$ sudo rm -rf /etc/systemd/system/marathon.service.d
 	$ sudo find /var /etc /usr -name \*marathon\* -delete
 	$ sudo find /etc /usr /var -name \*mesos\* -delete
-	$ sudo rm -rf /srv/docker/ldsmdb /srv/docker/research-db
+	$ sudo rm -rf /srv/docker/ldsmdb /srv/docker/research-db /srv/docker/woken /srv/docker/woken-validation
     ```
 
 ------
