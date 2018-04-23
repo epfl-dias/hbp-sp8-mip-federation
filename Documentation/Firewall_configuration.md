@@ -6,9 +6,9 @@ The Docker *Overlay Network* technology is a Software Defined Network (SDN) syst
 
 To accomplish this, it maintains a database of hosts on which each network is available, and multiplexes the network traffic of the docker container over a single network connection between these hosts. It also allows encryption of the tunneled (application) data.
 
-All management communication sare done through TLS encrypted communications between the hosts of the Docker Swarm (cluster, or federation in the case of the MIP). These certificates are automatically managed, and regenerated every 30 minutes by default.
+All management communication is done through TLS encrypted communications between the hosts of the Docker Swarm (cluster, or federation in the case of the MIP). These certificates are automatically managed, and regenerated every 30 minutes by default.
 
-The following ports and protocols are required for the proper function of the Docker Swarm overlay network technology need to be open for connection on the hosts:
+The following ports and protocols are required to be open for the proper function of the Docker Swarm overlay network technology:
 
  * On **all** the Docker hosts which are part of the Swarm (federation):
    * **TCP: 7946**
@@ -91,7 +91,7 @@ Specific public services provided by the MIP to the end-users will require their
 
 ## Firewalld Configuration for the MIP
 
-The following command will configure and then enable the firewall on RedHat Enterprise Linux, with the minimum ports required for the federation networks.
+On RedHat Enterprise Linux, use the Firewalld configuration files `docker-swarm-worker.xml` and `docker-swarm-master.xml` available in the same folder as this file. The following command will configure and then enable the firewall on RHEL, with the minimum ports required for the federation networks.
 
 Specific public services provided by the MIP to the end-users will require their own configuration to be added.
 

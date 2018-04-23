@@ -252,6 +252,26 @@ To be defined once the Federation Web Portal is available. (As of 29.03.2018, no
 
 In case of problems, check first that the [requirements](#requirements) are met, that the [initial setup](#initial_setup) is correct and that the [deployment steps](#deployment_of_the_federation_manager_node) were carefully followed.
 
+### Check that all workers are seen by Exareme
+
+Connect to the Exareme test page at `http://localhost:9090/exa-view/index.html`. The algorithm WP\_LIST\_DATASETS should show the datasets available at each node of the Federation.
+
+If a node dataset is missing:
+
+- Check the network configuration for this node.
+- Check that the parameters to access the node's database are correctly set.
+- Make sure the worker node has joined the swarm and that it is tagged with a proper name.
+- Try to stop and restart Exareme on all nodes (see below).
+- If this does not solve the problem, check the logs and report the problem.
+
+### Exareme failure
+
+Simply restart all Exareme instances from the manager node:
+
+```
+./stop.sh all
+./start.sh all
+```
 
 ### Network configuration
 
@@ -309,7 +329,7 @@ firewall-cmd --reload
 
 #### Exareme worker cannot access the local database
 
-If for unknown reasons an Exareme worker on a node cannot access the LDSM database on this node, despite the fact that it is correctly exposed on port 31432 of the localhost, an alternative configuration can be used.
+If for unknown reasons an Exareme worker on a node cannot access the LDSM database on a node, despite the fact that it is correctly exposed on port 31432 of the localhost, an alternative configuration can be used. The problem might be linked to the use of a firewall; the following is simply a solution that has proved useful in some case.
 
 The Exareme worker can be configured to access the LDSM directly at its container IP address, on the local port, with this configuration in the `settings.local.<node_alias>.sh` file:
 
@@ -318,37 +338,16 @@ The Exareme worker can be configured to access the LDSM directly at its containe
 : ${LDSM_PORT:="5432"}
 ```
 
-This requires the firewall to be adapted to allow access to the `container_IP`. For firewalld, the following configuration in `/etc/firewalld/services/docker-to-docker.xml` implements this:
+This might require the firewall to be adapted to allow access to the `container_IP`. For firewalld, this can be done with a rich rule such as:
 
 ```
 <rule family="ipv4">
-	<destination address="172.19.0.0/16"/>
+	<destination address="<container_IP>/16"/>
 	<accept/>
 </rule>
 ```
 
-Check [this post](https://github.com/moby/moby/issues/16137#issuecomment-271615192) for a possible alternative.
-
-### Check that all workers are seen by Exareme
-
-Connect to the Exareme test page at `http://localhost:9090/exa-view/index.html`. The algorithm WP\_LIST\_DATASETS should show the datasets available at each node of the Federation.
-
-If a node dataset is missing:
-
-- Check the network configuration for this node.
-- Check that the parameters to access the node's database are correctly set.
-- Make sure the worker node has joined the swarm and that it is tagged with a proper name.
-- Try to stop and restart Exareme on all nodes (see below).
-- If this does not solve the problem, check the logs and report the problem.
-
-### Exareme failure
-
-Simply restart all Exareme instances from the manager node:
-
-```
-./stop.sh all
-./start.sh all
-```
+[This post](https://github.com/moby/moby/issues/16137#issuecomment-271615192) discusses possible interaction problems with firewalld and Docker.
 
 ## Behaviour in case of failure
 
