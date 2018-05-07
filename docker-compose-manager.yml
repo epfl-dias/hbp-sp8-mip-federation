@@ -26,7 +26,6 @@ networks:
 services:
   exareme-keystore:
     image: ${CONSUL_IMAGE}:${CONSUL_VERSION}
-    image: progrium/consul
     command:
       - -server
       - -bootstrap
