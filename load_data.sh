@@ -23,13 +23,6 @@
 # 1. Create all the DB at once
 echo "Create databases..."
 
-created_network=false
-if ! docker network ls | grep -q ${MIP_PRIVATE_NETWORK}
-then
-	docker network create ${MIP_PRIVATE_NETWORK}
-	created_network=true
-fi
-
 for d in ${DB_DATA} ${DB_DATASETS}
 do
 	if [ ! -d ${d} ]
@@ -38,6 +31,19 @@ do
 		sudo chown -R 999:999 ${d}
 	fi
 done
+
+if [ "x0" = "x$(echo ${DB_CREATE_LIST} ${DB_SETUP_LIST} | wc -w)" ]
+then
+	# Nothing to do, so exit
+	exit 0
+fi
+
+created_network=false
+if ! docker network ls | grep -q ${MIP_PRIVATE_NETWORK}
+then
+	docker network create ${MIP_PRIVATE_NETWORK}
+	created_network=true
+fi
 
 db_id=$(docker run --rm -d \
 	-e POSTGRES_USER="${DB_USER_ADMIN}" \
