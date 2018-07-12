@@ -67,5 +67,5 @@ services:
       - ${DB_DATASETS}:/datasets:ro
     networks:
       - local
-  #  ports: # Expose PostgresRAW-UI only when needed
-  #    - "${DB_UI_PORT}:5555"
+    ports: # Expose PostgresRAW-UI only when needed
+      - "${DB_UI_PORT}:5555"
