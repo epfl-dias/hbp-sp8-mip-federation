@@ -90,6 +90,7 @@
 
 : ${EXAREME_IMAGE:="hbpmip/exareme"}
 : ${EXAREME_VERSION:="v5"}
+: ${EXAREME_UI:="${PWD}/exareme-ui"}
 : ${EXAREME_ROLE:=""} # The default value is set to the federation node role (worker or manager)
 : ${EXAREME_KEYSTORE_PORT:="8500"}
 : ${EXAREME_KEYSTORE:="exareme-keystore:${EXAREME_KEYSTORE_PORT}"}
