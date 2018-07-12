@@ -1,5 +1,5 @@
 #!/bin/sh
-#                    Copyright (c) 2017-2018
+#                    Copyright (c) 2018-2018
 #   Data Intensive Applications and Systems Labaratory (DIAS)
 #            Ecole Polytechnique Federale de Lausanne
 #
@@ -20,16 +20,22 @@
 # Import settings
 . ./settings.sh
 
-# Permanent storage for Portainer
-test -d ${PORTAINER_DATA} \
-	|| mkdir -p ${PORTAINER_DATA} \
-	|| ( echo Failed to create ${PORTAINER_DATA}; exit 1 )
+case $1 in
+	deploy)
+		# Permanent storage for Portainer
+		test -d ${PORTAINER_DATA} \
+			|| mkdir -p ${PORTAINER_DATA} \
+			|| ( echo Failed to create ${PORTAINER_DATA}; exit 1 )
 
-docker service create \
-	--publish ${PORTAINER_PORT}:9000 \
-	--constraint 'node.role == manager' \
-	--detach=true \
-	--mount type=bind,src=/var/run/docker.sock,dst=/var/run/docker.sock \
-	--mount type=bind,src=${PORTAINER_DATA},dst=/data \
-	--name ${COMPOSE_PROJECT_NAME}_portainer \
-	${PORTAINER_IMAGE}${PORTAINER_VERSION}
+		docker stack deploy --compose-file=docker-compose-portainer.yml ${COMPOSE_PROJECT_NAME}-portainer
+		;;
+	ls)
+		docker stack ls
+		;;
+	ps|rm|services)
+		docker stack $1 ${COMPOSE_PROJECT_NAME}-portainer
+		;;
+	*)
+		docker stack $1
+		;;
+esac
