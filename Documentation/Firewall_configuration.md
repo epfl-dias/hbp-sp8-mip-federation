@@ -89,6 +89,16 @@ Specific public services provided by the MIP to the end-users will require their
 
     ```
 
+7. Docker swarm ports should be behind a firewall
+
+   If docker swarm has some ports published that you want to be behind the ufw firewall follow these instructions:
+   https://svenv.nl/unixandlinux/dockerufw/
+   
+   The reason for this is that docker swarm writes directly to the iptables and when it publishes a port, this port is not behind the ufw
+   firewall.
+
+
+
 ## Firewalld Configuration for the MIP
 
 On RedHat Enterprise Linux, use the Firewalld configuration files `docker-swarm-worker.xml` and `docker-swarm-master.xml` available in the same folder as this file. The following command will configure and then enable the firewall on RHEL, with the minimum ports required for the federation networks.
