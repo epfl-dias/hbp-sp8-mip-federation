@@ -124,4 +124,4 @@
 : ${DOCKER_DATASETS_FOLDER:="/root/exareme/datasets/}
 
 # Host machine dataset folder
-: ${HOST_DATASETS_FOLDER:="/mnt/c/Users/Thanasis/Desktop/Madgik/mip-federation}
+: ${HOST_DATASETS_FOLDER:="/path/to/datasets/folder}
