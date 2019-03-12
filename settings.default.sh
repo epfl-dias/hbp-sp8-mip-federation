@@ -119,3 +119,9 @@
 : ${DB_UI_PORT:="31555"} # External port, if exposed
 : ${DB_UI_FEDERATION_SOURCES:="harmonized_clinical_data"}
 : ${DB_UI_LOCAL_SOURCES:="mip_cde_features harmonized_clinical_data"}
+
+# Internal dataset folder
+: ${DOCKER_DATASETS_FOLDER:="/root/exareme/datasets/}
+
+# Host machine dataset folder
+: ${HOST_DATASETS_FOLDER:="/mnt/c/Users/Thanasis/Desktop/Madgik/mip-federation}
