@@ -31,10 +31,11 @@ usage() {
 	)
 
 	cat <<EOT
-usage: $0 [-h|--help] (all|nodename [nodename ...])
+usage: $0 [-h|--help] (all|nodename [nodename ...]) [datasets_path]
 	-h, --help: show this message and exit
 	all: Start the federation on all the nodes currently known
 	nodename: one or more nodes on which to deploy the stack
+	datasets_path: the path where the datasets.csv file exists
 
 You can use environment variables, or add them into settings.local.sh
 to change the default values.
@@ -48,6 +49,7 @@ Errors: This script will exit with the following error codes:
  1	No arguments provided
  2	Federation node is incorrect
  3	Federation node role is incorrect
+ 4  The datasets.csv file does not exist in the folder specified.
 EOT
 }
 
@@ -61,12 +63,14 @@ start_node() {
 
 		# Finally deploy the stack
 		case ${EXAREME_ROLE} in
-			manager)
+			manager)			
 				# Wait for managers to have started
+				export HOST_DATASETS_FOLDER
 				docker stack deploy -c docker-compose-${EXAREME_ROLE}.yml ${FEDERATION_NODE}
 			;;
 			worker)
 				# Start in the background the workers
+				export HOST_DATASETS_FOLDER
 				docker stack deploy -c docker-compose-${EXAREME_ROLE}.yml ${FEDERATION_NODE} &
 			;;
 			*)
@@ -161,13 +165,13 @@ start_one_node() {
 	done
 }
 
-if [ $# -lt 1 ];
+if [ $# -lt 2 ];
 then
 	usage
 	exit 1
 fi
 
-if [ $# -eq 1 ];
+if [ $# -eq 2 ];
 then
 	case $1 in
 		-h|--help)
@@ -177,6 +181,7 @@ then
 	
 		*)
 			FEDERATION_NODE="$1"
+			HOST_DATASETS_FOLDER="$2"
 		;;
 	esac
 
@@ -185,7 +190,13 @@ then
 		usage
 		exit 2
 	fi
-
+	
+	if [ ! -f "${HOST_DATASETS_FOLDER}"/datasets.csv ]; then
+		echo "The datasets.csv file does not exist in the folder specified."
+		usage
+		exit 4
+	fi
+		
 	case ${FEDERATION_NODE} in
 		all)
 			start_all_nodes
