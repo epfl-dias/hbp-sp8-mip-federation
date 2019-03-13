@@ -79,4 +79,4 @@ services:
     networks:
       - "net-federation" # Connect the docker container to the global network
     volumes:
-      - ${HOST_DATASETS_FOLDER}:${DOCKER_DATASETS_FOLDER}
+      - ${LOCAL_DATASETS_FOLDER}:${DOCKER_DATASETS_FOLDER}
