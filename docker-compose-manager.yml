@@ -59,6 +59,7 @@ services:
       - RAWRESULTS=${EXAREME_LDSM_RESULTS}
       - RAWDATAKEY=${EXAREME_LDSM_DATAKEY}
       - MODE=${EXAREME_MODE}
+      - DOCKER_DATASETS_FOLDER=${DOCKER_DATASETS_FOLDER}
     depends_on:
       - exareme-keystore
     deploy:
