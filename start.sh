@@ -48,6 +48,7 @@ Errors: This script will exit with the following error codes:
  1	No arguments provided
  2	Federation node is incorrect
  3	Federation node role is incorrect
+ 4  Datasets folder is not correct
 EOT
 }
 
@@ -58,10 +59,15 @@ start_node() {
 		EXAREME_ROLE=$3
 
 		. ./settings.sh ${FEDERATION_NODE}
+			
+		if [ ! -f "${LOCAL_DATASETS_FOLDER}"/datasets.csv ]; then
+			echo "The datasets.csv file does not exist in the folder specified for the node ${FEDERATION_NODE} ."
+			exit 4
+		fi
 
 		# Finally deploy the stack
 		case ${EXAREME_ROLE} in
-			manager)
+			manager)			
 				# Wait for managers to have started
 				docker stack deploy -c docker-compose-${EXAREME_ROLE}.yml ${FEDERATION_NODE}
 			;;
@@ -185,7 +191,7 @@ then
 		usage
 		exit 2
 	fi
-
+		
 	case ${FEDERATION_NODE} in
 		all)
 			start_all_nodes

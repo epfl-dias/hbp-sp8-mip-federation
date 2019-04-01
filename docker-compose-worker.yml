@@ -38,6 +38,7 @@ services:
       - RAWRESULTS=${EXAREME_LDSM_RESULTS}
       - RAWDATAKEY=${EXAREME_LDSM_DATAKEY}
       - MODE=${EXAREME_MODE}
+      - DOCKER_DATASETS_FOLDER=${DOCKER_DATASETS_FOLDER}
     deploy:
       restart_policy:
         condition: on-failure
@@ -50,4 +51,5 @@ services:
           - node.labels.name == ${FEDERATION_NODE}
     networks:
       - "net-federation" # Connect the docker container to the global network
-
+    volumes:
+      - ${LOCAL_DATASETS_FOLDER}:${DOCKER_DATASETS_FOLDER}
